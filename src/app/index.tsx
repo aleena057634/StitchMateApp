@@ -1,98 +1,167 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// AsyncStorage se saved userId check karne ke liye import
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { router } from "expo-router";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
+import colors from "../constents/colors";
+
+export default function Index() {
+
+  // Get Started button ka function
+  async function handleGetStarted() {
+
+    // Check karo ke pehle se koi user login hai ya nahi
+    const userId = await AsyncStorage.getItem("userId");
+
+    // Agar userId mil gaya to user already logged in hai
+    if (userId) {
+
+      // Direct Dashboard par bhejo
+      router.replace("/Dashbord");
+
+    } else {
+
+      // Agar userId nahi hai to SignIn par bhejo
+      router.push("/SignIn");
+    }
   }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.imageContainer}>
+        <Image
+          source={require("../../assets/images/tailor1.jpg")}
+          style={styles.image}
+        />
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      {/* App Name */}
+      <Text style={styles.appName}>
+        StitchMate
+      </Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      {/* Tagline */}
+      <Text style={styles.tagline}>
+        Your Smart Tailoring Companion
+      </Text>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      {/* Main Heading */}
+      <Text style={styles.title}>
+        Your Style, Our Craft
+      </Text>
+
+      {/* Subtitle */}
+      <Text style={styles.subtitle}>
+        Perfect measurements.{"\n"}
+        Perfect fitting.
+      </Text>
+
+      {/* Button */}
+      <Pressable
+        style={styles.button}
+        onPress={handleGetStarted}
+      >
+        <Text style={styles.buttonText}>
+          Get Started
+        </Text>
+      </Pressable>
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: colors.background,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 25,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+
+  // Illustration container
+  imageContainer: {
+    width: "100%",
+    height: 310,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+
+  image: {
+    width: 310,
+    height: 310,
+    resizeMode: "contain",
   },
+
+  // App name
+  appName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.accent,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+
+  // App tagline
+  tagline: {
+    fontSize: 13,
+    color: colors.secondaryText,
+    marginBottom: 12,
+    letterSpacing: 0.3,
+  },
+
+  // Main heading
   title: {
-    textAlign: 'center',
+    fontSize: 30,
+    fontWeight: "800",
+    color: colors.primary,
+    textAlign: "center",
+    marginBottom: 10,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  // Subtitle
+  subtitle: {
+    fontSize: 16,
+    color: colors.secondaryText,
+    textAlign: "center",
+    lineHeight: 25,
+    marginBottom: 30,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  // Button
+  button: {
+    width: "82%",
+    height: 54,
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+
+    elevation: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+
+  buttonText: {
+    color: colors.white,
+    fontSize: 17,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 });
