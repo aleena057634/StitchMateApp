@@ -237,10 +237,11 @@ export default function CustomerList() {
                         style: "cancel",
                       },
                       {
+  // Yaha hm data pass kr rah ahia doosri screen ma
                         text: "Yes",
                         onPress: () => {
                           router.push({
-                            pathname: "/AddCustomer",
+                            pathname: "/AddCustomers",
                             params: {
                               ID: item.ID.toString(),
                               NAME: item.NAME,
@@ -268,7 +269,7 @@ export default function CustomerList() {
       {/* Add Customer Floating Button */}
       <FloatingButton
         onPress={() => {
-          router.push("/AddCustomer");
+          router.push("/AddCustomers");
         }}
       />
     </SafeAreaView>

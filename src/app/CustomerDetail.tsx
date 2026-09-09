@@ -217,7 +217,7 @@ return (
       </TouchableOpacity>
 
     </View>
-
+{/* yaha ma na id pass kr rai hoo meaasuement screen ma customer ki  */}
     <TouchableOpacity
       style={styles.measurementCard}
       onPress={() => {
