@@ -60,18 +60,19 @@ export async function getMeasurements(customerId: number) {
     const db = await databaseConnection();
 
     const data = await db.getAllAsync(
-      `SELECT * FROM MEASUREMENTS WHERE CUSTOMER_ID = ?`,
+      `SELECT *, MEASUREMENT_ID AS mEASUREMENT_ID
+       FROM MEASUREMENTS
+       WHERE CUSTOMER_ID = ?`,
       [customerId]
     );
 
     console.log("MEASUREMENTS DATA:", data);
 
     return data;
-  } 
- catch (error) {
-  console.log("FAILED TO get MEASUREMENT:", error);
-  throw error;
-}
+  } catch (error) {
+    console.log("FAILED TO get MEASUREMENT:", error);
+    throw error;
+  }
 }
 export async function updateMeasurement(
   measurementId: number,
@@ -100,18 +101,10 @@ export async function updateMeasurement(
       WHERE MEASUREMENT_ID = ?`,
       measurement.Chest ? Number(measurement.Chest) : null,
       measurement.Waist ? Number(measurement.Waist) : null,
-      measurement.Qameez_Length
-        ? Number(measurement.Qameez_Length)
-        : null,
-      measurement.Shirt_Length
-        ? Number(measurement.Shirt_Length)
-        : null,
-      measurement.Shalwar_Length
-        ? Number(measurement.Shalwar_Length)
-        : null,
-      measurement.Trouser_Length
-        ? Number(measurement.Trouser_Length)
-        : null,
+      measurement.Qameez_Length ? Number(measurement.Qameez_Length) : null,
+      measurement.Shirt_Length ? Number(measurement.Shirt_Length) : null,
+      measurement.Shalwar_Length ? Number(measurement.Shalwar_Length) : null,
+      measurement.Trouser_Length ? Number(measurement.Trouser_Length) : null,
       measurement.Sleeve ? Number(measurement.Sleeve) : null,
       measurement.Daman ? Number(measurement.Daman) : null,
       measurement.Hip ? Number(measurement.Hip) : null,
@@ -125,8 +118,10 @@ export async function updateMeasurement(
     );
 
     console.log("Measurement updated successfully");
+    return true;
   } catch (error) {
     console.log("Failed to update measurement:", error);
+    return false;
   }
 }
 

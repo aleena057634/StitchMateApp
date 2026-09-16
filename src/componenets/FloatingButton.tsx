@@ -1,7 +1,6 @@
+
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet } from "react-native";
-
-import colors from "@/constents/colors";
 
 type FloatingButtonProps = {
   onPress: () => void;
@@ -18,11 +17,12 @@ export default function FloatingButton({
       <Ionicons
         name="add"
         size={30}
-        color={colors.white}
+        color="#2B2B2B"
       />
     </Pressable>
   );
 }
+
 const styles = StyleSheet.create({
   button: {
     position: "absolute",
@@ -31,10 +31,11 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: colors.primary,
+    backgroundColor: "#C6A15B",
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
     zIndex: 999,
   },
 });
+

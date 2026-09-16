@@ -3,13 +3,12 @@ import { databaseConnection } from "./databaseConnection";
 
 export async function AddCustomer(
   name: string,
-  address: string,
-  phone: string
+  phone: string,
+  address: string
 ) {
   try {
     const db = await databaseConnection();
 
-    // Current logged-in user ki ID
     const userId = await AsyncStorage.getItem("userId");
 
     console.log("Current User ID:", userId);
@@ -19,11 +18,11 @@ export async function AddCustomer(
     }
 
     await db.runAsync(
-      `INSERT INTO CUSTOMER (NAME, ADDRESS, PHONE, USER_ID)
+      `INSERT INTO CUSTOMER (NAME, PHONE, ADDRESS, USER_ID)
        VALUES (?, ?, ?, ?)`,
       name,
-      address,
       phone,
+      address,
       Number(userId)
     );
 
@@ -45,16 +44,21 @@ export async function getCustomers() {
       return [];
     }
 
-    const customers = await db.getAllAsync<{ID: number; NAME: string;PHONE: string;ADDRESS: string;}>
-    (
-  `SELECT ID,
-    NAME,
-    PHONE,
-    ADDRESS
-   FROM CUSTOMER
-   WHERE USER_ID = ?`,
-  Number(userId)
-);
+    const customers =
+      await db.getAllAsync<{
+        ID: number;
+        NAME: string;
+        PHONE: string;
+        ADDRESS: string;
+      }>(
+        `SELECT ID,
+                NAME,
+                PHONE,
+                ADDRESS
+         FROM CUSTOMER
+         WHERE USER_ID = ?`,
+        Number(userId)
+      );
 
     console.log("Customers:", customers);
 
@@ -88,21 +92,21 @@ export async function DeleteCustomer(id: number) {
 export async function updateCunstomer(
   id: number,
   name: string,
-  address: string,
-  phone: string
+  phone: string,
+  address: string
 ) {
   try {
     const db = await databaseConnection();
 
     await db.runAsync(
-  `UPDATE CUSTOMER
-   SET NAME = ?, ADDRESS = ?, PHONE = ?
-   WHERE ID = ?`,
-  name,
-  address,
-  phone,
-  id
-);
+      `UPDATE CUSTOMER
+       SET NAME = ?, PHONE = ?, ADDRESS = ?
+       WHERE ID = ?`,
+      name,
+      phone,
+      address,
+      id
+    );
 
     console.log("Customer updated successfully");
 

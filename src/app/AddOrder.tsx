@@ -1,26 +1,30 @@
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
+  ToastAndroid,
 } from "react-native";
 
-import colors from "@/constents/colors";
+import DateModel from "@/componenets/DateModel";
 import { getCustomers } from "../../databse/CustomerCru";
 import { getMeasurements } from "../../databse/MeasuremenrCruc";
 import { addOrder } from "../../databse/order";
+import ThemeContext from "@/context/ThemeContext";
+import { ConfirmAlert } from "@/componenets/CustomAlert";
+
 export default function OrderScreen() {
-  
+  const { theme, isDark, toggleTheme } = useContext(ThemeContext);
 
   const [orderName, setOrderName] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [loader, setLoader] = useState(false);
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -34,17 +38,23 @@ export default function OrderScreen() {
   const [arrivalDate, setArrivalDate] = useState(new Date());
   const [departureDate, setDepartureDate] = useState(new Date());
 
-  const [showArrivalCalendar, setShowArrivalCalendar] =
-    useState(false);
-
-  const [showDepartureCalendar, setShowDepartureCalendar] =
-    useState(false);
-
   const [statusOpen, setStatusOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
 
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState("");
+
+  const [totalPayment, setTotalPayment] = useState("");
+  const [advancePayment, setAdvancePayment] = useState("");
+
+  const [customerAlert, setCustomerAlert] = useState(false);
+  const [measurementAlert, setMeasurementAlert] = useState(false);
+  const [alertQuantity, setAlertQuantity] = useState(false);
+  const [alertStatus, setAlertStatus] = useState(false);
+  const [alertPriority, setAlertPriority] = useState(false);
+  const [alertAdvance, setAlertAdvance] = useState(false);
+  const [alertTotalAmount, setAlertTotalAmount] = useState(false);
+  const [errorAlert, setErrorAlert] = useState(false);
 
   const statuses = [
     "Pending",
@@ -60,10 +70,6 @@ export default function OrderScreen() {
     "High",
     "Urgent",
   ];
-
-  // PAYMENT STATES
-  const [totalPayment, setTotalPayment] = useState("");
-  const [advancePayment, setAdvancePayment] = useState("");
 
   const remainingPayment =
     (Number(totalPayment) || 0) -
@@ -84,7 +90,6 @@ export default function OrderScreen() {
     }
   }
 
-  // Load Measurement
   async function loadMeasurements(customerId: number) {
     try {
       const data = await getMeasurements(customerId);
@@ -97,65 +102,54 @@ export default function OrderScreen() {
     }
   }
 
-  // CUSTOMER SELECT
   function handleCustomerSelect(customer: any) {
     setSelectedCustomer(customer);
     setCustomerOpen(false);
 
-    // Purani measurement remove
     setSelectedMeasurement(null);
 
-    // Selected customer ki measurements load
     loadMeasurements(Number(customer.ID));
   }
 
-  // CREATE ORDER
   async function handleCreateOrder() {
-    // Customer validation
     if (!selectedCustomer) {
-      Alert.alert("Required", "Please select a customer.");
+      setCustomerAlert(true);
       return;
     }
 
-    // Measurement validation
     if (!selectedMeasurement) {
-      Alert.alert("Required", "Please select a measurement.");
+      setMeasurementAlert(true);
       return;
     }
 
-    // Quantity validation
     if (!quantity || Number(quantity) <= 0) {
-      Alert.alert("Required", "Please enter a valid quantity.");
+      setAlertQuantity(true);
       return;
     }
 
-    // Status validation
     if (!selectedStatus) {
-      Alert.alert("Required", "Please select order status.");
+      setAlertStatus(true);
       return;
     }
 
-    // Priority validation
     if (!selectedPriority) {
-      Alert.alert("Required", "Please select order priority.");
+      setAlertPriority(true);
       return;
     }
 
-    // Payment validation
     if (!totalPayment || Number(totalPayment) < 0) {
-      Alert.alert("Required", "Please enter total payment.");
+      setAlertTotalAmount(true);
       return;
     }
 
     if (Number(advancePayment) > Number(totalPayment)) {
-      Alert.alert(
-        "Invalid Payment",
-        "Advance payment cannot be greater than total payment."
-      );
+      setAlertAdvance(true);
       return;
     }
 
     try {
+      setLoader(true);
+
       await addOrder(
         orderName,
         Number(quantity),
@@ -171,14 +165,15 @@ export default function OrderScreen() {
         notes
       );
 
-      Alert.alert(
-        "Success",
-        "Order added successfully."
+      ToastAndroid.show(
+        "Order added successfully",
+        ToastAndroid.SHORT
       );
+
+      setLoader(false);
 
       router.replace("/OrderList");
 
-      // Form clear
       setOrderName("");
       setQuantity("");
       setSelectedCustomer(null);
@@ -190,12 +185,11 @@ export default function OrderScreen() {
       setAdvancePayment("");
       setNotes("");
     } catch (error) {
+      setLoader(false);
+
       console.log("Failed to create order:", error);
 
-      Alert.alert(
-        "Error",
-        "Order could not be created."
-      );
+      setErrorAlert(true);
     }
   }
 
@@ -203,7 +197,7 @@ export default function OrderScreen() {
     <ScrollView
       style={[
         styles.container,
-        { backgroundColor: colors.background },
+        { backgroundColor: theme.background },
       ]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={true}
@@ -213,7 +207,7 @@ export default function OrderScreen() {
         <Text
           style={[
             styles.title,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Create Order
@@ -222,7 +216,7 @@ export default function OrderScreen() {
         <Text
           style={[
             styles.subtitle,
-            { color: colors.secondaryText },
+            { color: theme.secondaryText },
           ]}
         >
           Enter order details
@@ -234,15 +228,15 @@ export default function OrderScreen() {
         style={[
           styles.card,
           {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
         ]}
       >
         <Text
           style={[
             styles.sectionTitle,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Customer
@@ -251,7 +245,7 @@ export default function OrderScreen() {
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Select Customer
@@ -261,8 +255,8 @@ export default function OrderScreen() {
           style={[
             styles.dropdown,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
           onPress={() => {
@@ -276,7 +270,7 @@ export default function OrderScreen() {
           <Ionicons
             name="person-outline"
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
 
           <Text
@@ -284,8 +278,8 @@ export default function OrderScreen() {
               styles.dropdownText,
               {
                 color: selectedCustomer
-                  ? colors.text
-                  : colors.placeholder,
+                  ? theme.text
+                  : theme.placeholder,
               },
             ]}
           >
@@ -300,7 +294,7 @@ export default function OrderScreen() {
                 : "chevron-down"
             }
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
         </Pressable>
 
@@ -309,8 +303,8 @@ export default function OrderScreen() {
             style={[
               styles.dropdownList,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
           >
@@ -318,7 +312,7 @@ export default function OrderScreen() {
               <Text
                 style={[
                   styles.noOption,
-                  { color: colors.secondaryText },
+                  { color: theme.secondaryText },
                 ]}
               >
                 No customers found
@@ -329,7 +323,7 @@ export default function OrderScreen() {
                   key={customer.ID}
                   style={[
                     styles.option,
-                    { borderBottomColor: colors.border },
+                    { borderBottomColor: theme.border },
                   ]}
                   onPress={() =>
                     handleCustomerSelect(customer)
@@ -338,7 +332,7 @@ export default function OrderScreen() {
                   <Text
                     style={[
                       styles.optionText,
-                      { color: colors.text },
+                      { color: theme.text },
                     ]}
                   >
                     {customer.NAME}
@@ -348,7 +342,7 @@ export default function OrderScreen() {
                     <Text
                       style={[
                         styles.optionSubText,
-                        { color: colors.secondaryText },
+                        { color: theme.secondaryText },
                       ]}
                     >
                       {customer.PHONE}
@@ -366,25 +360,24 @@ export default function OrderScreen() {
         style={[
           styles.card,
           {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
         ]}
       >
         <Text
           style={[
             styles.sectionTitle,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Order Details
         </Text>
 
-        {/* ORDER NAME */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Order Name
@@ -394,34 +387,33 @@ export default function OrderScreen() {
           style={[
             styles.inputContainer,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
         >
           <Ionicons
             name="document-text-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <TextInput
             style={[
               styles.input,
-              { color: colors.text },
+              { color: theme.text },
             ]}
             placeholder="Enter order name"
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={theme.placeholder}
             value={orderName}
             onChangeText={setOrderName}
           />
         </View>
 
-        {/* QUANTITY */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Quantity
@@ -431,153 +423,62 @@ export default function OrderScreen() {
           style={[
             styles.inputContainer,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
         >
           <Ionicons
             name="layers-outline"
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
 
           <TextInput
             style={[
               styles.input,
-              { color: colors.text },
+              { color: theme.text },
             ]}
             placeholder="Enter quantity"
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={theme.placeholder}
             keyboardType="numeric"
             value={quantity}
             onChangeText={setQuantity}
           />
         </View>
 
-        {/* ARRIVAL DATE */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Arrival Date
         </Text>
 
-        <Pressable
-          style={[
-            styles.dateContainer,
-            {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
-            },
-          ]}
-          onPress={() =>
-            setShowArrivalCalendar(true)
-          }
-        >
-          <Ionicons
-            name="calendar-outline"
-            size={20}
-            color={colors.secondaryText}
-          />
+        <DateModel
+          date={arrivalDate}
+          setDate={setArrivalDate}
+        />
 
-          <Text
-            style={[
-              styles.dateText,
-              { color: colors.text },
-            ]}
-          >
-            {arrivalDate.toLocaleDateString()}
-          </Text>
-
-          <Ionicons
-            name="chevron-down"
-            size={20}
-            color={colors.secondaryText}
-            style={styles.rightIcon}
-          />
-        </Pressable>
-
-        {showArrivalCalendar && (
-          <DateTimePicker
-            value={arrivalDate}
-            mode="date"
-            onChange={(event, selectedDate) => {
-              setShowArrivalCalendar(false);
-
-              if (selectedDate) {
-                setArrivalDate(selectedDate);
-              }
-            }}
-          />
-        )}
-
-        {/* DEPARTURE DATE */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Departure Date
         </Text>
 
-        <Pressable
-          style={[
-            styles.dateContainer,
-            {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
-            },
-          ]}
-          onPress={() =>
-            setShowDepartureCalendar(true)
-          }
-        >
-          <Ionicons
-            name="calendar-outline"
-            size={20}
-            color={colors.secondaryText}
-          />
+        <DateModel
+          date={departureDate}
+          setDate={setDepartureDate}
+        />
 
-          <Text
-            style={[
-              styles.dateText,
-              { color: colors.text },
-            ]}
-          >
-            {departureDate.toLocaleDateString()}
-          </Text>
-
-          <Ionicons
-            name="chevron-down"
-            size={20}
-            color={colors.secondaryText}
-            style={styles.rightIcon}
-          />
-        </Pressable>
-
-        {showDepartureCalendar && (
-          <DateTimePicker
-            value={departureDate}
-            mode="date"
-            onChange={(event, selectedDate) => {
-              setShowDepartureCalendar(false);
-
-              if (selectedDate) {
-                setDepartureDate(selectedDate);
-              }
-            }}
-          />
-        )}
-
-        {/* STATUS */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Status
@@ -587,8 +488,8 @@ export default function OrderScreen() {
           style={[
             styles.dropdown,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
           onPress={() => {
@@ -602,7 +503,7 @@ export default function OrderScreen() {
           <Ionicons
             name="checkmark-circle-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <Text
@@ -610,8 +511,8 @@ export default function OrderScreen() {
               styles.dropdownText,
               {
                 color: selectedStatus
-                  ? colors.text
-                  : colors.placeholder,
+                  ? theme.text
+                  : theme.placeholder,
               },
             ]}
           >
@@ -625,7 +526,7 @@ export default function OrderScreen() {
                 : "chevron-down"
             }
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
         </Pressable>
 
@@ -634,8 +535,8 @@ export default function OrderScreen() {
             style={[
               styles.dropdownList,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
           >
@@ -644,7 +545,7 @@ export default function OrderScreen() {
                 key={status}
                 style={[
                   styles.option,
-                  { borderBottomColor: colors.border },
+                  { borderBottomColor: theme.border },
                 ]}
                 onPress={() => {
                   setSelectedStatus(status);
@@ -654,7 +555,7 @@ export default function OrderScreen() {
                 <Text
                   style={[
                     styles.optionText,
-                    { color: colors.text },
+                    { color: theme.text },
                   ]}
                 >
                   {status}
@@ -664,11 +565,10 @@ export default function OrderScreen() {
           </View>
         )}
 
-        {/* PRIORITY */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Priority
@@ -678,8 +578,8 @@ export default function OrderScreen() {
           style={[
             styles.dropdown,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
           onPress={() => {
@@ -693,7 +593,7 @@ export default function OrderScreen() {
           <Ionicons
             name="flag-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <Text
@@ -701,8 +601,8 @@ export default function OrderScreen() {
               styles.dropdownText,
               {
                 color: selectedPriority
-                  ? colors.text
-                  : colors.placeholder,
+                  ? theme.text
+                  : theme.placeholder,
               },
             ]}
           >
@@ -716,7 +616,7 @@ export default function OrderScreen() {
                 : "chevron-down"
             }
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
         </Pressable>
 
@@ -725,8 +625,8 @@ export default function OrderScreen() {
             style={[
               styles.dropdownList,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
           >
@@ -735,7 +635,7 @@ export default function OrderScreen() {
                 key={priority}
                 style={[
                   styles.option,
-                  { borderBottomColor: colors.border },
+                  { borderBottomColor: theme.border },
                 ]}
                 onPress={() => {
                   setSelectedPriority(priority);
@@ -745,7 +645,7 @@ export default function OrderScreen() {
                 <Text
                   style={[
                     styles.optionText,
-                    { color: colors.text },
+                    { color: theme.text },
                   ]}
                 >
                   {priority}
@@ -761,15 +661,15 @@ export default function OrderScreen() {
         style={[
           styles.card,
           {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
         ]}
       >
         <Text
           style={[
             styles.sectionTitle,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Measurement
@@ -778,7 +678,7 @@ export default function OrderScreen() {
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Select Measurement
@@ -788,16 +688,13 @@ export default function OrderScreen() {
           style={[
             styles.dropdown,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
           onPress={() => {
             if (!selectedCustomer) {
-              Alert.alert(
-                "Select Customer",
-                "Please select a customer first."
-              );
+              setCustomerAlert(true);
               return;
             }
 
@@ -811,7 +708,7 @@ export default function OrderScreen() {
           <Ionicons
             name="body-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <Text
@@ -819,8 +716,8 @@ export default function OrderScreen() {
               styles.dropdownText,
               {
                 color: selectedMeasurement
-                  ? colors.text
-                  : colors.placeholder,
+                  ? theme.text
+                  : theme.placeholder,
               },
             ]}
           >
@@ -835,7 +732,7 @@ export default function OrderScreen() {
                 : "chevron-down"
             }
             size={20}
-            color={colors.primary}
+            color={theme.primary}
           />
         </Pressable>
 
@@ -844,8 +741,8 @@ export default function OrderScreen() {
             style={[
               styles.dropdownList,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
           >
@@ -853,7 +750,7 @@ export default function OrderScreen() {
               <Text
                 style={[
                   styles.noOption,
-                  { color: colors.secondaryText },
+                  { color: theme.secondaryText },
                 ]}
               >
                 No measurements found for this customer
@@ -864,7 +761,7 @@ export default function OrderScreen() {
                   key={item.mEASUREMENT_ID}
                   style={[
                     styles.option,
-                    { borderBottomColor: colors.border },
+                    { borderBottomColor: theme.border },
                   ]}
                   onPress={() => {
                     setSelectedMeasurement(item);
@@ -874,7 +771,7 @@ export default function OrderScreen() {
                   <Text
                     style={[
                       styles.optionText,
-                      { color: colors.text },
+                      { color: theme.text },
                     ]}
                   >
                     {item.TYPE}
@@ -883,11 +780,10 @@ export default function OrderScreen() {
                   <Text
                     style={[
                       styles.optionSubText,
-                      { color: colors.secondaryText },
+                      { color: theme.secondaryText },
                     ]}
                   >
-                    Measurement #
-                    {item.mEASUREMENT_ID}
+                    Measurement #{item.mEASUREMENT_ID}
                   </Text>
                 </Pressable>
               ))
@@ -901,25 +797,24 @@ export default function OrderScreen() {
         style={[
           styles.card,
           {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
         ]}
       >
         <Text
           style={[
             styles.sectionTitle,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Payment Details
         </Text>
 
-        {/* TOTAL PAYMENT */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Total Payment
@@ -929,35 +824,34 @@ export default function OrderScreen() {
           style={[
             styles.inputContainer,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
         >
           <Ionicons
             name="cash-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <TextInput
             style={[
               styles.input,
-              { color: colors.text },
+              { color: theme.text },
             ]}
             placeholder="Enter total payment"
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={theme.placeholder}
             keyboardType="numeric"
             value={totalPayment}
             onChangeText={setTotalPayment}
           />
         </View>
 
-        {/* ADVANCE PAYMENT */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Advance Payment
@@ -967,41 +861,40 @@ export default function OrderScreen() {
           style={[
             styles.inputContainer,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
             },
           ]}
         >
           <Ionicons
             name="wallet-outline"
             size={20}
-            color={colors.secondaryText}
+            color={theme.secondaryText}
           />
 
           <TextInput
             style={[
               styles.input,
-              { color: colors.text },
+              { color: theme.text },
             ]}
             placeholder="Enter advance payment"
-            placeholderTextColor={colors.placeholder}
+            placeholderTextColor={theme.placeholder}
             keyboardType="numeric"
             value={advancePayment}
             onChangeText={setAdvancePayment}
           />
         </View>
 
-        {/* REMAINING */}
         <View
           style={[
             styles.remainingBox,
-            { backgroundColor: colors.background },
+            { backgroundColor: theme.background },
           ]}
         >
           <Text
             style={[
               styles.remainingLabel,
-              { color: colors.secondaryText },
+              { color: theme.secondaryText },
             ]}
           >
             Remaining Payment
@@ -1010,18 +903,17 @@ export default function OrderScreen() {
           <Text
             style={[
               styles.remainingAmount,
-              { color: colors.text },
+              { color: theme.text },
             ]}
           >
             Rs. {remainingPayment}
           </Text>
         </View>
 
-        {/* NOTES */}
         <Text
           style={[
             styles.label,
-            { color: colors.text },
+            { color: theme.text },
           ]}
         >
           Notes
@@ -1031,43 +923,123 @@ export default function OrderScreen() {
           style={[
             styles.notesInput,
             {
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
-              color: colors.text,
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+              color: theme.text,
             },
           ]}
           placeholder="Enter any additional notes"
-          placeholderTextColor={colors.placeholder}
+          placeholderTextColor={theme.placeholder}
           multiline
-          numberOfLines={4}
           value={notes}
           onChangeText={setNotes}
         />
       </View>
 
       {/* CREATE ORDER */}
-      <Pressable
-        style={[
-          styles.button,
-          { backgroundColor: colors.primary },
-        ]}
-        onPress={handleCreateOrder}
-      >
-        <Text
-          style={[
-            styles.buttonText,
-            { color: colors.white },
-          ]}
-        >
-          Create Order
-        </Text>
-
-        <Ionicons
-          name="arrow-forward"
-          size={20}
-          color={colors.white}
+      {loader ? (
+        <ActivityIndicator
+          size="large"
+          color={theme.primary}
         />
-      </Pressable>
+      ) : (
+        <Pressable
+          style={[
+            styles.button,
+            { backgroundColor: theme.primary },
+          ]}
+          onPress={handleCreateOrder}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme.white },
+            ]}
+          >
+            Create Order
+          </Text>
+
+          <Ionicons
+            name="arrow-forward"
+            size={20}
+            color={theme.white}
+          />
+        </Pressable>
+      )}
+
+      {/* ALERTS */}
+
+      <ConfirmAlert
+        visible={customerAlert}
+        title="Customer Required"
+        Message="Please select a customer first."
+        onConfirm={() => {
+          setCustomerAlert(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={measurementAlert}
+        title="Measurement Required"
+        Message="Please select a measurement first."
+        onConfirm={() => {
+          setMeasurementAlert(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={alertQuantity}
+        title="Quantity Required"
+        Message="Please enter a valid quantity."
+        onConfirm={() => {
+          setAlertQuantity(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={alertStatus}
+        title="Status Required"
+        Message="Please select the order status."
+        onConfirm={() => {
+          setAlertStatus(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={alertPriority}
+        title="Priority Required"
+        Message="Please select the order priority."
+        onConfirm={() => {
+          setAlertPriority(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={alertTotalAmount}
+        title="Payment Amount"
+        Message="Please enter a valid total payment amount."
+        onConfirm={() => {
+          setAlertTotalAmount(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={alertAdvance}
+        title="Invalid Advance"
+        Message="Advance payment cannot be greater than total payment."
+        onConfirm={() => {
+          setAlertAdvance(false);
+        }}
+      />
+
+      <ConfirmAlert
+        visible={errorAlert}
+        title="Error"
+        Message="Order could not be created."
+        onConfirm={() => {
+          setErrorAlert(false);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -1104,7 +1076,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-
     elevation: 2,
     shadowOpacity: 0.07,
     shadowRadius: 5,
@@ -1141,24 +1112,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 14.5,
-  },
-
-  dateContainer: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 13,
-  },
-
-  dateText: {
-    marginLeft: 10,
-    fontSize: 14.5,
-  },
-
-  rightIcon: {
-    marginLeft: "auto",
   },
 
   dropdown: {
@@ -1239,7 +1192,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     marginTop: 2,
-
     elevation: 3,
     shadowOpacity: 0.12,
     shadowRadius: 6,

@@ -1,6 +1,8 @@
-import colors from "@/constents/colors";
+
 import { Ionicons } from "@expo/vector-icons";
+import { useContext } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
+import ThemeContext from "@/context/ThemeContext";
 
 type SearchBarProps = {
   value: string;
@@ -11,46 +13,55 @@ export default function SearchBar({
   value,
   onChangeText,
 }: SearchBarProps) {
-  return (
-    <View style={styles.container}>
+  const { theme } = useContext(ThemeContext);
 
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.inputBackground,
+          borderColor: theme.border,
+        },
+      ]}
+    >
       <Ionicons
-        name="search"
-        size={20}
-        color={colors.secondaryText}
+        name="search-outline"
+        size={21}
+        color={theme.secondaryText}
       />
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: theme.text,
+          },
+        ]}
         placeholder="Search by Name..."
-        placeholderTextColor={colors.placeholder}
+        placeholderTextColor={theme.placeholder}
         value={value}
         onChangeText={onChangeText}
       />
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
- container: {
-  height: 48,
-  backgroundColor: colors.inputBackground,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 14,
-
-  flexDirection: "row",
-  alignItems: "center",
-
-  paddingHorizontal: 15,
-  marginTop: 2,
-},
+  container: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 2,
+  },
 
   input: {
     flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: colors.text,
+    marginLeft: 11,
+    fontSize: 15,
+    paddingVertical: 0,
   },
 });

@@ -1,6 +1,7 @@
+
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,258 +9,357 @@ import {
   View,
 } from "react-native";
 
-import colors from "@/constents/colors";
+import ThemeContext from "../context/ThemeContext";
 import { getCustomers } from "../../databse/CustomerCru";
 
 export default function CustomerScreen() {
   const { id } = useLocalSearchParams();
   const [customer, setCustomer] = useState<any>(null);
 
-  // Load selected customer
+  const { theme } = useContext(ThemeContext);
+
   useEffect(() => {
     loadCustomer();
   }, [id]);
 
+  async function loadCustomer() {
+    try {
+      const customers = await getCustomers();
 
-async function loadCustomer() {
-  try {
-    const customers = await getCustomers();
+      const customer = customers.find(
+        (item: any) => item.ID == id
+      );
 
-    const customer = customers.find(
-      (item: any) => item.ID == id
-    );
-    setCustomer(customer);
-
-  } catch (error) {
-    console.log("Failed to load customer:", error);
+      setCustomer(customer);
+    } catch (error) {
+      console.log("Failed to load customer:", error);
+    }
   }
-}
 
-return (
-  <View style={styles.container}>
+  return (
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background },
+      ]}
+    >
+      {/* Header */}
+      <View style={styles.pageHeader}>
+        <View style={styles.headerText}>
+          <Text
+            style={[
+              styles.title,
+              { color: theme.text },
+            ]}
+          >
+            Customer Details
+          </Text>
 
-    <View style={styles.pageHeader}>
-      <View>
-        <Text style={styles.title}>
-          Customer Details
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Customer information & services
-        </Text>
-      </View>
-
-      <View style={styles.headerIcon}>
-        <Ionicons
-          name="person-outline"
-          size={23}
-          color={colors.primary}
-        />
-      </View>
-    </View>
-
-   {customer && (
-  <View style={styles.customerCard}>
-
-    <View style={styles.profileSection}>
-
-      <View style={styles.customerIcon}>
-        <Ionicons
-          name="person"
-          size={28}
-          color={colors.primary}
-        />
-      </View>
-
-      <View style={styles.customerInfo}>
-        <Text style={styles.name}>
-          {customer.NAME}
-        </Text>
-
-        <View style={styles.customerIdBox}>
-          <Text style={styles.customerId}>
-            Customer #{customer.ID}
+          <Text
+            style={[
+              styles.subtitle,
+              { color: theme.secondaryText },
+            ]}
+          >
+            Customer information & services
           </Text>
         </View>
-      </View>
 
-    </View>
-
-    <View style={styles.detailsContainer}>
-
-      <View style={styles.detailRow}>
-        <View style={styles.detailIcon}>
+        <View
+          style={[
+            styles.headerIcon,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
           <Ionicons
-            name="call-outline"
-            size={17}
-            color={colors.primary}
+            name="person-outline"
+            size={23}
+            color={theme.primary}
           />
         </View>
-
-        <View style={styles.detailContent}>
-          <Text style={styles.detailLabel}>
-            Phone
-          </Text>
-
-          <Text style={styles.detailValue}>
-            {customer.PHONE || "No phone number"}
-          </Text>
-        </View>
       </View>
 
-      <View style={styles.detailRow}>
-        <View style={styles.detailIcon}>
-          <Ionicons
-            name="location-outline"
-            size={17}
-            color={colors.primary}
-          />
+      {/* Customer Information */}
+      {customer && (
+        <View
+          style={[
+            styles.customerCard,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <View style={styles.profileSection}>
+            <View
+              style={[
+                styles.customerIcon,
+                { backgroundColor: theme.inputBackground },
+              ]}
+            >
+              <Ionicons
+                name="person"
+                size={28}
+                color={theme.primary}
+              />
+            </View>
+
+            <View style={styles.customerInfo}>
+              <Text
+                style={[
+                  styles.name,
+                  { color: theme.text },
+                ]}
+              >
+                {customer.NAME}
+              </Text>
+
+              <View
+                style={[
+                  styles.customerIdBox,
+                  { backgroundColor: theme.inputBackground },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.customerId,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  Customer #{customer.ID}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.detailsContainer,
+              { borderTopColor: theme.border },
+            ]}
+          >
+            <View style={styles.detailRow}>
+              <View
+                style={[
+                  styles.detailIcon,
+                  { backgroundColor: theme.inputBackground },
+                ]}
+              >
+                <Ionicons
+                  name="call-outline"
+                  size={17}
+                  color={theme.primary}
+                />
+              </View>
+
+              <View style={styles.detailContent}>
+                <Text
+                  style={[
+                    styles.detailLabel,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  Phone
+                </Text>
+
+                <Text
+                  style={[
+                    styles.detailValue,
+                    { color: theme.text },
+                  ]}
+                >
+                  {customer.PHONE || "No phone number"}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View
+                style={[
+                  styles.detailIcon,
+                  { backgroundColor: theme.inputBackground },
+                ]}
+              >
+                <Ionicons
+                  name="location-outline"
+                  size={17}
+                  color={theme.primary}
+                />
+              </View>
+
+              <View style={styles.detailContent}>
+                <Text
+                  style={[
+                    styles.detailLabel,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  Address
+                </Text>
+
+                <Text
+                  style={[
+                    styles.detailValue,
+                    { color: theme.text },
+                  ]}
+                >
+                  {customer.ADDRESS || "No address"}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
+      )}
 
-        <View style={styles.detailContent}>
-          <Text style={styles.detailLabel}>
-            Address
-          </Text>
-
-          <Text style={styles.detailValue}>
-            {customer.ADDRESS || "No address"}
-          </Text>
-        </View>
-      </View>
-
-    </View>
-
-  </View>
-)}
-
-    <View style={styles.sectionHeader}>
-      <View>
-        <Text style={styles.sectionTitle}>
+      {/* Services */}
+      <View style={styles.sectionHeader}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme.text },
+          ]}
+        >
           Customer Services
         </Text>
 
-        <Text style={styles.sectionSubtitle}>
-          Manage customer information
+        <Text
+          style={[
+            styles.sectionSubtitle,
+            { color: theme.secondaryText },
+          ]}
+        >
+          Manage orders and measurements
         </Text>
       </View>
-    </View>
 
-    <View style={styles.row}>
-
+      {/* Orders */}
       <TouchableOpacity
-        style={styles.serviceCard}
-        onPress={() => {}}
-        activeOpacity={0.8}
-      >
-        <View style={styles.serviceTop}>
-
-          <View style={styles.iconCircle}>
-            <Ionicons
-              name="card-outline"
-              size={25}
-              color={colors.primary}
-            />
-          </View>
-
-          <View style={styles.arrowCircle}>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={colors.secondaryText}
-            />
-          </View>
-
-        </View>
-
-        <Text style={styles.serviceTitle}>
-          Payment
-        </Text>
-
-        <Text style={styles.serviceSubtitle}>
-          Manage payments
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.serviceCard}
+        style={[
+          styles.serviceCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}
         onPress={() => {
-          router.push("/OrderList");
+          router.push("/AddOrder");
         }}
         activeOpacity={0.8}
       >
-        <View style={styles.serviceTop}>
-
-          <View style={styles.iconCircle}>
-            <Ionicons
-              name="receipt-outline"
-              size={25}
-              color={colors.primary}
-            />
-          </View>
-
-          <View style={styles.arrowCircle}>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={colors.secondaryText}
-            />
-          </View>
-
+        <View
+          style={[
+            styles.serviceIcon,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
+          <Ionicons
+            name="receipt-outline"
+            size={27}
+            color={theme.primary}
+          />
         </View>
 
-        <Text style={styles.serviceTitle}>
-          Orders
-        </Text>
+        <View style={styles.serviceContent}>
+          <Text
+            style={[
+              styles.serviceTitle,
+              { color: theme.text },
+            ]}
+          >
+            Orders
+          </Text>
 
-        <Text style={styles.serviceSubtitle}>
-          Manage customer orders
-        </Text>
+          <Text
+            style={[
+              styles.serviceSubtitle,
+              { color: theme.secondaryText },
+            ]}
+          >
+            Manage customer orders
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.arrowCircle,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={19}
+            color={theme.primary}
+          />
+        </View>
       </TouchableOpacity>
 
-    </View>
-{/* yaha ma na id pass kr rai hoo meaasuement screen ma customer ki  */}
-    <TouchableOpacity
-      style={styles.measurementCard}
-      onPress={() => {
-        router.push({
-          pathname: "/MeasurementList",
-          params: {
-            id: customer?.ID?.toString(),
+      {/* Measurements */}
+      <TouchableOpacity
+        style={[
+          styles.serviceCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
           },
-        });
-      }}
-      activeOpacity={0.8}
-    >
-      <View style={styles.measurementIcon}>
-        <Ionicons
-          name="body-outline"
-          size={27}
-          color={colors.primary}
-        />
-      </View>
+        ]}
+        onPress={() => {
+          router.push({
+            pathname: "/MeasurementList",
+            params: {
+              id: customer?.ID?.toString(),
+            },
+          });
+        }}
+        activeOpacity={0.8}
+      >
+        <View
+          style={[
+            styles.serviceIcon,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
+          <Ionicons
+            name="body-outline"
+            size={27}
+            color={theme.primary}
+          />
+        </View>
 
-      <View style={styles.measurementContent}>
-        <Text style={styles.serviceTitle}>
-          Measurement
-        </Text>
+        <View style={styles.serviceContent}>
+          <Text
+            style={[
+              styles.serviceTitle,
+              { color: theme.text },
+            ]}
+          >
+            Measurements
+          </Text>
 
-        <Text style={styles.serviceSubtitle}>
-          View or add customer measurements
-        </Text>
-      </View>
+          <Text
+            style={[
+              styles.serviceSubtitle,
+              { color: theme.secondaryText },
+            ]}
+          >
+            View or add customer measurements
+          </Text>
+        </View>
 
-      <View style={styles.measurementArrow}>
-        <Ionicons
-          name="chevron-forward"
-          size={19}
-          color={colors.primary}
-        />
-      </View>
-
-    </TouchableOpacity>
-
-  </View>
-);
+        <View
+          style={[
+            styles.arrowCircle,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={19}
+            color={theme.primary}
+          />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -268,13 +368,15 @@ const styles = StyleSheet.create({
     padding: 18,
   },
 
-  /* PAGE HEADER */
-
   pageHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 18,
+  },
+
+  headerText: {
+    flex: 1,
   },
 
   title: {
@@ -293,15 +395,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
+    marginLeft: 12,
   },
-
-  /* CUSTOMER CARD */
 
   customerCard: {
     borderRadius: 20,
     padding: 17,
     borderWidth: 1,
-
     elevation: 3,
     shadowOpacity: 0.07,
     shadowRadius: 7,
@@ -382,51 +482,29 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  /* NOT FOUND */
-
-  notFoundCard: {
-    borderRadius: 18,
-    padding: 30,
-    alignItems: "center",
-    borderWidth: 1,
-  },
-
-  notFound: {
-    fontSize: 14,
-    marginTop: 10,
-  },
-
-  /* SECTION */
-
   sectionHeader: {
     marginTop: 24,
-    marginBottom: 11,
+    marginBottom: 12,
   },
 
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
   },
 
   sectionSubtitle: {
     fontSize: 11,
-    marginTop: 3,
-  },
-
-  /* SERVICE CARDS */
-
-  row: {
-    flexDirection: "row",
-    gap: 12,
+    marginTop: 4,
   },
 
   serviceCard: {
-    flex: 1,
-    minHeight: 145,
+    minHeight: 88,
+    flexDirection: "row",
+    alignItems: "center",
     padding: 15,
     borderRadius: 18,
     borderWidth: 1,
-
+    marginBottom: 12,
     elevation: 2,
     shadowOpacity: 0.06,
     shadowRadius: 5,
@@ -436,27 +514,17 @@ const styles = StyleSheet.create({
     },
   },
 
-  serviceTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 13,
-  },
-
-  iconCircle: {
-    width: 50,
-    height: 50,
+  serviceIcon: {
+    width: 53,
+    height: 53,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 13,
   },
 
-  arrowCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
+  serviceContent: {
+    flex: 1,
   },
 
   serviceTitle: {
@@ -470,44 +538,12 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
 
-  /* MEASUREMENT */
-
-  measurementCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    minHeight: 92,
-    marginTop: 12,
-    padding: 15,
-    borderRadius: 18,
-    borderWidth: 1,
-
-    elevation: 2,
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-  },
-
-  measurementIcon: {
-    width: 53,
-    height: 53,
-    borderRadius: 16,
+  arrowCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 11,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 13,
-  },
-
-  measurementContent: {
-    flex: 1,
-  },
-
-  measurementArrow: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    marginLeft: 10,
   },
 });

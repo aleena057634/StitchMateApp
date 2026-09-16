@@ -231,7 +231,7 @@ export async function getRecentOrders() {
       FROM ORDERS
       WHERE USER_ID = ?
       ORDER BY ORDER_ID DESC
-      LIMIT 5
+      LIMIT 3
       `,
       [Number(userId)]
     );
@@ -348,3 +348,162 @@ export async function updateOrderStatus(
   }
 }
 
+export async function TotalOrders() {
+  const db = await databaseConnection();
+
+  const userId = await AsyncStorage.getItem("userId");
+
+  if (!userId) {
+    return 0;
+  }
+
+  const total: any = await db.getFirstAsync(
+    `SELECT COUNT(*) as count FROM ORDERS WHERE USER_ID = ?`,
+    [userId]
+  );
+
+  console.log("Total Orders is", total);
+
+  return total?.count || 0;
+}
+export async function getTotalAmount(orderId: number){
+ try {
+   const db=await databaseConnection();
+ const Total=  db.getFirstAsync(`
+        SELECT  ORDER_PAYMENT  FROM ORDER WHERE ORDER_ID=? 
+    `,orderId)
+    console.log("Total amount=",Total);
+    return Total;
+ } catch (error) {
+  console.log("Failed to get Total mount")
+ }
+}
+
+export async function PaidAmount(orderId: number) {
+  const db = await databaseConnection();
+
+  try {
+    await db.runAsync(
+      `UPDATE ORDERS
+       SET ORDER_REMAINING = 0
+       WHERE ORDER_ID = ?`,
+      [orderId]
+    );
+  
+
+    console.log("Order marked as paid");
+  } catch (error) {
+    console.log("Failed to mark order as paid", error);
+  }
+}
+
+export async function Mark(orderId: number) {
+  const db = await databaseConnection();
+
+  try {
+    const order = await db.getFirstAsync<{
+      ORDER_ADVANCEPAYMENT: number;
+      ORDER_REMAINING: number;
+    }>(
+      `
+      SELECT ORDER_ADVANCEPAYMENT, ORDER_REMAINING
+      FROM ORDERS
+      WHERE ORDER_ID = ?
+      `,
+      [orderId]
+    );
+
+    if (!order) {
+      return;
+    }
+if (order.ORDER_REMAINING <= 0) {
+  return;
+}
+    const newPayment = order.ORDER_REMAINING;
+
+    const newPaidAmount =
+      order.ORDER_ADVANCEPAYMENT + newPayment;
+
+    await db.runAsync(
+      `
+      INSERT INTO PAYMENT
+      (ORDER_ID, PAYMENT_AMOUNT, PAYMENT_DATE)
+      VALUES (?, ?, ?)
+      `,
+      [
+        orderId,
+        newPayment,
+      new Date().toLocaleDateString()
+      ]
+    );
+
+    await db.runAsync(
+      `
+      UPDATE ORDERS
+      SET ORDER_ADVANCEPAYMENT = ?,
+          ORDER_REMAINING = 0
+      WHERE ORDER_ID = ?
+      `,
+      [newPaidAmount, orderId]
+    );
+
+    console.log("Order marked as paid");
+  } catch (error) {
+    console.log("Failed to mark order as paid", error);
+  }
+}
+
+export async function Partial_Payment(
+  orderId: number,
+  amount: number
+) {
+  const db = await databaseConnection();
+
+  const order = await db.getFirstAsync<{
+    ORDER_ADVANCEPAYMENT: number;
+    ORDER_REMAINING: number;
+  }>(
+    `
+    SELECT ORDER_ADVANCEPAYMENT, ORDER_REMAINING
+    FROM ORDERS
+    WHERE ORDER_ID = ?
+    `,
+    [orderId]
+  );
+
+  if (!order) {
+    return;
+  }
+
+  const newPayment = amount;
+
+  const newPaidAmount =
+    order.ORDER_ADVANCEPAYMENT + amount;
+
+  const newRemaining =
+    order.ORDER_REMAINING - amount;
+
+  await db.runAsync(
+    `
+    INSERT INTO PAYMENT
+    (ORDER_ID, PAYMENT_AMOUNT, PAYMENT_DATE)
+    VALUES (?, ?, ?)
+    `,
+    [
+      orderId,
+      newPayment,
+      
+      new Date().toLocaleDateString(),
+    ]
+  );
+
+  await db.runAsync(
+    `
+    UPDATE ORDERS
+    SET ORDER_ADVANCEPAYMENT = ?,
+        ORDER_REMAINING = ?
+    WHERE ORDER_ID = ?
+    `,
+    [newPaidAmount, newRemaining, orderId]
+  );
+}

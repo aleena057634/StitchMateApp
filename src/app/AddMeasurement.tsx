@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,79 +7,201 @@ import {
   Text,
   View,
 } from "react-native";
+import ThemeContext from "../context/ThemeContext";
 
 export default function AddMeasurement() {
 
-  const { id } = useLocalSearchParams();
+const { id, measurementId } = useLocalSearchParams();
+
+  const { theme } = useContext(ThemeContext);
 
   function selectMeasurement(type: string) {
-    router.push({
-      pathname: "/MeasurementForm",
-      params: {
-        id: String(id),
-        type: type,
-      },
-    });
-  }
+  router.push({
+    pathname: "/MeasurementForm",
+    params: {
+      id: String(id),
+      type: type,
+      measurementId: measurementId
+        ? String(measurementId)
+        : "",
+    },
+  });
+}
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background },
+      ]}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Add Measurement</Text>
-             <Text>Customer Id:{id}</Text>
-          <Text style={styles.subtitle}>
+          <Text
+            style={[
+              styles.title,
+              { color: theme.text },
+            ]}
+          >
+            Add Measurement
+          </Text>
+
+          <Text style={{ color: theme.secondaryText }}>
+            Customer Id:{id}
+          </Text>
+
+          <Text
+            style={[
+              styles.subtitle,
+              { color: theme.secondaryText },
+            ]}
+          >
             Select the type of measurement
           </Text>
         </View>
 
         <View style={styles.list}>
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => selectMeasurement("Male Shalwar Kameez")}
           >
-            <Text style={styles.cardTitle}>Male Shalwar Kameez</Text>
-            <Text style={styles.cardSubtitle}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.text },
+              ]}
+            >
+              Male Shalwar Kameez
+            </Text>
+
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: theme.secondaryText },
+              ]}
+            >
               Add male shalwar kameez measurement
             </Text>
           </Pressable>
 
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => selectMeasurement("Female Shalwar Kameez")}
           >
-            <Text style={styles.cardTitle}>Female Shalwar Kameez</Text>
-            <Text style={styles.cardSubtitle}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.text },
+              ]}
+            >
+              Female Shalwar Kameez
+            </Text>
+
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: theme.secondaryText },
+              ]}
+            >
               Add female shalwar kameez measurement
             </Text>
           </Pressable>
 
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => selectMeasurement("Pant")}
           >
-            <Text style={styles.cardTitle}>Pant</Text>
-            <Text style={styles.cardSubtitle}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.text },
+              ]}
+            >
+              Pant
+            </Text>
+
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: theme.secondaryText },
+              ]}
+            >
               Add pant measurement
             </Text>
           </Pressable>
 
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => selectMeasurement("Shirt")}
           >
-            <Text style={styles.cardTitle}>Shirt</Text>
-            <Text style={styles.cardSubtitle}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.text },
+              ]}
+            >
+              Shirt
+            </Text>
+
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: theme.secondaryText },
+              ]}
+            >
               Add shirt measurement
             </Text>
           </Pressable>
 
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => selectMeasurement("Coat")}
           >
-            <Text style={styles.cardTitle}>Coat</Text>
-            <Text style={styles.cardSubtitle}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.text },
+              ]}
+            >
+              Coat
+            </Text>
+
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: theme.secondaryText },
+              ]}
+            >
               Add coat measurement
             </Text>
           </Pressable>
@@ -92,7 +214,6 @@ export default function AddMeasurement() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F8F8",
   },
 
   content: {
@@ -108,12 +229,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#222",
   },
 
   subtitle: {
     fontSize: 14,
-    color: "#777",
     marginTop: 6,
   },
 
@@ -122,22 +241,18 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#E8E8E8",
   },
 
   cardTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#222",
   },
 
   cardSubtitle: {
     fontSize: 12,
-    color: "#888",
     marginTop: 5,
   },
 });

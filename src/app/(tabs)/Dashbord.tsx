@@ -1,44 +1,89 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   getCustomerName,
   getTotalCustomers,
   Measurement_table,
-} from "../../databse/table";
-
-import colors from "@/constents/colors";
+} from "../../../databse/table";
+import { TotalOrders ,getUrgentOrders} from "../../../databse/order";
+import ThemeContext from "../../context/ThemeContext";
 
 export default function Dashbord() {
-  
+  const { theme } = useContext(ThemeContext);
+
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [Name, setName] = useState("");
+  const [TotalOrder, setTotalOrder] = useState(0);
+  const [orders,setOrders]=useState<any[]>([]);
+
+  const UrgentOrder = async () => {
+  try {
+    const data = await getUrgentOrders();
+    setOrders(data);
+  } catch (error) {
+    console.log("Failed to load urgent orders:", error);
+  }
+};
+
+useFocusEffect(
+  useCallback(() => {
+    UrgentOrder();
+  }, [])
+);
+  const [animatedOrder, setAnimatedOrder] = useState(0);
 
   useEffect(() => {
     Measurement_table();
-
-    const loadCustomers = async () => {
-      const count = await getTotalCustomers();
-      setTotalCustomers(count);
-    };
 
     const LoadName = async () => {
       const username = await getCustomerName();
       setName(username || "");
     };
 
+    const loadCustomers = async () => {
+      const count = await getTotalCustomers();
+      setTotalCustomers(count);
+    };
+
+    const loadOrders = async () => {
+      const count = await TotalOrders();
+
+      setTotalOrder(count);
+
+      if (count === 0) {
+        setAnimatedOrder(0);
+        return;
+      }
+
+      let current = 0;
+
+      const interval = setInterval(() => {
+        current++;
+
+        setAnimatedOrder(current);
+
+        if (current >= count) {
+          clearInterval(interval);
+        }
+      }, 100);
+    };
+
     loadCustomers();
+    loadOrders();
     LoadName();
   }, []);
 
@@ -46,58 +91,60 @@ export default function Dashbord() {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: colors.background },
+        { backgroundColor: theme.background },
       ]}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-
         {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text
               style={[
                 styles.smallText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
-              Welcome back
+              Welcome back,
             </Text>
 
             <Text
               style={[
                 styles.userName,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               {Name || "Tailor"}
             </Text>
           </View>
 
-          <View
+          <TouchableOpacity
             style={[
               styles.profileIcon,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
+            onPress={() => {
+              router.push("/Setting");
+            }}
           >
             <Ionicons
-              name="person-outline"
+              name="settings-outline"
               size={22}
-              color={colors.primary}
+              color={theme.primary}
             />
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* WELCOME BANNER */}
         <View
           style={[
             styles.banner,
-            { backgroundColor: colors.primary },
+            { backgroundColor: theme.primary },
           ]}
         >
           <View style={styles.bannerText}>
@@ -117,7 +164,7 @@ export default function Dashbord() {
 
           <View style={styles.bannerImageContainer}>
             <Image
-              source={require("../../assets/images/t2.jpg")}
+              source={require("../../../assets/images/t2.jpg")}
               style={styles.bannerImage}
               resizeMode="cover"
             />
@@ -130,7 +177,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.sectionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               Overview
@@ -139,7 +186,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.sectionSubTitle,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               Your business at a glance
@@ -149,12 +196,11 @@ export default function Dashbord() {
 
         {/* STATISTICS */}
         <View style={styles.statsRow}>
-
           {/* CUSTOMERS */}
           <Pressable
             style={[
               styles.statCard,
-              { backgroundColor: colors.primary },
+              { backgroundColor: theme.primary },
             ]}
             onPress={() => {
               router.push("/CustomerList");
@@ -164,23 +210,21 @@ export default function Dashbord() {
               <View
                 style={[
                   styles.statIcon,
-                  { backgroundColor: colors.card },
+                  { backgroundColor: theme.card },
                 ]}
               >
                 <Ionicons
                   name="people-outline"
-                  size={22}
-                  color={colors.primary}
+                  size={21}
+                  color={theme.primary}
                 />
               </View>
 
-              <View style={styles.statArrow}>
-                <Ionicons
-                  name="chevron-forward"
-                  size={15}
-                  color="#FFFFFF"
-                />
-              </View>
+              <Ionicons
+                name="arrow-up-outline"
+                size={18}
+                color={theme.white}
+              />
             </View>
 
             <Text style={styles.statNumber}>
@@ -200,37 +244,35 @@ export default function Dashbord() {
           <Pressable
             style={[
               styles.statCard,
-              { backgroundColor: colors.primary },
+              { backgroundColor: theme.primary },
             ]}
             onPress={() => {
-              router.push("/AddOrder");
+              router.push("/OrderList");
             }}
           >
             <View style={styles.statTop}>
               <View
                 style={[
                   styles.statIcon,
-                  { backgroundColor: colors.card },
+                  { backgroundColor: theme.card },
                 ]}
               >
                 <Ionicons
                   name="receipt-outline"
-                  size={22}
-                  color={colors.primary}
+                  size={21}
+                  color={theme.primary}
                 />
               </View>
 
-              <View style={styles.statArrow}>
-                <Ionicons
-                  name="chevron-forward"
-                  size={15}
-                  color="#FFFFFF"
-                />
-              </View>
+              <Ionicons
+                name="arrow-up-outline"
+                size={18}
+                color={theme.white}
+              />
             </View>
 
             <Text style={styles.statNumber}>
-              12
+              {animatedOrder}
             </Text>
 
             <Text style={styles.statTitle}>
@@ -249,7 +291,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.sectionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               Quick Actions
@@ -258,7 +300,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.sectionSubTitle,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               Common tasks
@@ -268,52 +310,44 @@ export default function Dashbord() {
 
         {/* ACTION ROW 1 */}
         <View style={styles.actionRow}>
-
           {/* ADD CUSTOMER */}
           <Pressable
             style={[
               styles.actionCard,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
             onPress={() => {
-              router.push("/AddCustomer");
+              router.push("/AddCustomers");
             }}
           >
             <View style={styles.actionTop}>
               <View
                 style={[
                   styles.actionIcon,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
               >
                 <Ionicons
                   name="person-add-outline"
-                  size={23}
-                  color={colors.primary}
+                  size={22}
+                  color={theme.primary}
                 />
               </View>
 
-              <View
-                style={[
-                  styles.actionArrow,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-forward-outline"
-                  size={16}
-                  color={colors.secondaryText}
-                />
-              </View>
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={theme.secondaryText}
+              />
             </View>
 
             <Text
               style={[
                 styles.actionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               Add Customer
@@ -322,7 +356,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.actionSubText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               Create new customer
@@ -334,8 +368,8 @@ export default function Dashbord() {
             style={[
               styles.actionCard,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
             onPress={() => {
@@ -346,34 +380,27 @@ export default function Dashbord() {
               <View
                 style={[
                   styles.actionIcon,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
               >
                 <Ionicons
                   name="add-circle-outline"
-                  size={23}
-                  color={colors.primary}
+                  size={22}
+                  color={theme.primary}
                 />
               </View>
 
-              <View
-                style={[
-                  styles.actionArrow,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-forward-outline"
-                  size={16}
-                  color={colors.secondaryText}
-                />
-              </View>
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={theme.secondaryText}
+              />
             </View>
 
             <Text
               style={[
                 styles.actionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               Add Order
@@ -382,7 +409,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.actionSubText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               Create new order
@@ -392,64 +419,56 @@ export default function Dashbord() {
 
         {/* ACTION ROW 2 */}
         <View style={styles.actionRow}>
-
           {/* MEASUREMENT */}
           <Pressable
             style={[
               styles.actionCard,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
             onPress={() => {
-              router.push("/AddMeasurement");
+              router.push("/Payment");
             }}
           >
             <View style={styles.actionTop}>
               <View
                 style={[
                   styles.actionIcon,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
               >
                 <Ionicons
-                  name="body-outline"
-                  size={23}
-                  color={colors.primary}
+                  name="book-outline"
+                  size={22}
+                  color={theme.primary}
                 />
               </View>
 
-              <View
-                style={[
-                  styles.actionArrow,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-forward-outline"
-                  size={16}
-                  color={colors.secondaryText}
-                />
-              </View>
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={theme.secondaryText}
+              />
             </View>
 
             <Text
               style={[
                 styles.actionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
-              Measurement
+             Payment
             </Text>
 
             <Text
               style={[
                 styles.actionSubText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
-              Add measurements
+             See Payment history
             </Text>
           </Pressable>
 
@@ -458,8 +477,8 @@ export default function Dashbord() {
             style={[
               styles.actionCard,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
             onPress={() => {
@@ -470,34 +489,27 @@ export default function Dashbord() {
               <View
                 style={[
                   styles.actionIcon,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
               >
                 <Ionicons
                   name="people-outline"
-                  size={23}
-                  color={colors.primary}
+                  size={22}
+                  color={theme.primary}
                 />
               </View>
 
-              <View
-                style={[
-                  styles.actionArrow,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-forward-outline"
-                  size={16}
-                  color={colors.secondaryText}
-                />
-              </View>
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={theme.secondaryText}
+              />
             </View>
 
             <Text
               style={[
                 styles.actionTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               Customers
@@ -506,7 +518,7 @@ export default function Dashbord() {
             <Text
               style={[
                 styles.actionSubText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               View all customers
@@ -514,193 +526,147 @@ export default function Dashbord() {
           </Pressable>
         </View>
 
-        {/* RECENT ORDERS */}
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text
-              style={[
-                styles.sectionTitle,
-                { color: colors.text },
-              ]}
-            >
-              Recent Orders
-            </Text>
+        {/* URGENT ORDERS */}
+<View style={styles.sectionHeader}>
+  <View>
+    <Text
+      style={[
+        styles.sectionTitle,
+        { color: theme.text },
+      ]}
+    >
+      Urgent Orders
+    </Text>
 
-            <Text
-              style={[
-                styles.sectionSubTitle,
-                { color: colors.secondaryText },
-              ]}
-            >
-              Latest customer orders
-            </Text>
-          </View>
+    <Text
+      style={[
+        styles.sectionSubTitle,
+        { color: theme.secondaryText },
+      ]}
+    >
+      Orders that need attention
+    </Text>
+  </View>
 
-          <Pressable>
-            <Text
-              style={[
-                styles.viewAll,
-                { color: colors.primary },
-              ]}
-            >
-              View all
-            </Text>
-          </Pressable>
-        </View>
+  <Pressable
+    onPress={() => {
+      router.push("/OrderList");
+    }}
+  >
+    <Text
+      style={[
+        styles.viewAll,
+        { color: theme.primary },
+      ]}
+    >
+      View all
+    </Text>
+  </Pressable>
+</View>
 
-        {/* ORDER 1 */}
+{orders.length === 0 ? (
+  <View
+    style={[
+      styles.orderCard,
+      {
+        backgroundColor: theme.card,
+        borderColor: theme.border,
+      },
+    ]}
+  >
+    <Text
+      style={[
+        styles.orderDetail,
+        {
+          color: theme.secondaryText,
+          textAlign: "center",
+          flex: 1,
+        },
+      ]}
+    >
+      No urgent orders
+    </Text>
+  </View>
+) : (
+  orders.map((order) => (
+    <Pressable
+      key={order.ORDER_ID}
+      style={[
+        styles.orderCard,
+        {
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+        },
+      ]}
+      onPress={() => {
+        router.push({
+          pathname: "/OrderDetaail",
+          params: {
+            ORDER_ID: order.ORDER_ID,
+          },
+        });
+      }}
+    >
+      <View
+        style={[
+          styles.orderIcon,
+          { backgroundColor: theme.background },
+        ]}
+      >
+        <Ionicons
+          name="shirt-outline"
+          size={21}
+          color={theme.primary}
+        />
+      </View>
+
+      <View style={styles.orderInfo}>
+        <Text
+          style={[
+            styles.orderName,
+            { color: theme.text },
+          ]}
+        >
+          {order.NAME || "Customer"}
+        </Text>
+
+        <Text
+          style={[
+            styles.orderDetail,
+            { color: theme.secondaryText },
+          ]}
+        >
+          {order.ORDER_NAME || "Order"} • #{order.ORDER_ID}
+        </Text>
+      </View>
+
+      <View
+        style={[
+          styles.statusBox,
+          { backgroundColor: theme.background },
+        ]}
+      >
         <View
           style={[
-            styles.orderCard,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-            },
+            styles.statusDot,
+            { backgroundColor: theme.danger },
           ]}
-        >
-          <View
-            style={[
-              styles.orderIcon,
-              { backgroundColor: colors.background },
-            ]}
-          >
-            <Ionicons
-              name="shirt-outline"
-              size={22}
-              color={colors.primary}
-            />
-          </View>
+        />
 
-          <View style={styles.orderInfo}>
-            <Text
-              style={[
-                styles.orderName,
-                { color: colors.text },
-              ]}
-            >
-              Muhammad Ali
-            </Text>
-
-            <Text
-              style={[
-                styles.orderDetail,
-                { color: colors.secondaryText },
-              ]}
-            >
-              Shalwar Qameez • #1024
-            </Text>
-          </View>
-
-          <View style={styles.pendingStatus}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: colors.warning },
-              ]}
-            />
-
-            <Text
-              style={[
-                styles.statusText,
-                { color: colors.warning },
-              ]}
-            >
-              Pending
-            </Text>
-          </View>
-        </View>
-
-        {/* ORDER 2 */}
-        <View
+        <Text
           style={[
-            styles.orderCard,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-            },
+            styles.statusText,
+            { color: theme.danger },
           ]}
         >
-          <View
-            style={[
-              styles.orderIcon,
-              { backgroundColor: colors.background },
-            ]}
-          >
-            <Ionicons
-              name="shirt-outline"
-              size={22}
-              color={colors.primary}
-            />
-          </View>
+          Urgent
+        </Text>
+      </View>
+    </Pressable>
+  ))
+)}
 
-          <View style={styles.orderInfo}>
-            <Text
-              style={[
-                styles.orderName,
-                { color: colors.text },
-              ]}
-            >
-              Ahmed Raza
-            </Text>
-
-            <Text
-              style={[
-                styles.orderDetail,
-                { color: colors.secondaryText },
-              ]}
-            >
-              Pant • #1023
-            </Text>
-          </View>
-
-          <View style={styles.readyStatus}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: colors.success },
-              ]}
-            />
-
-            <Text
-              style={[
-                styles.statusText,
-                { color: colors.success },
-              ]}
-            >
-              Ready
-            </Text>
-          </View>
-        </View>
-
-        {/* LOGOUT */}
-        <Pressable
-          style={[
-            styles.logoutButton,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.danger,
-            },
-          ]}
-          onPress={async () => {
-            await AsyncStorage.removeItem("userId");
-            router.replace("/SignIn");
-          }}
-        >
-          <Ionicons
-            name="log-out-outline"
-            size={19}
-            color={colors.danger}
-          />
-
-          <Text
-            style={[
-              styles.logoutText,
-              { color: colors.danger },
-            ]}
-          >
-            Logout
-          </Text>
-        </Pressable>
+        
       </ScrollView>
     </SafeAreaView>
   );
@@ -713,17 +679,16 @@ const styles = StyleSheet.create({
 
   scrollContainer: {
     paddingHorizontal: 18,
-    paddingTop: 7,
+    paddingTop: 10,
     paddingBottom: 35,
   },
 
   /* HEADER */
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 18,
+    marginBottom: 20,
   },
 
   headerText: {
@@ -732,39 +697,30 @@ const styles = StyleSheet.create({
 
   smallText: {
     fontSize: 13,
+    fontWeight: "500",
   },
 
   userName: {
-    fontSize: 26,
+    fontSize: 27,
     fontWeight: "800",
-    marginTop: 3,
+    marginTop: 2,
   },
 
   profileIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+    width: 45,
+    height: 45,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-
-    elevation: 2,
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
   },
 
   /* BANNER */
-
   banner: {
-    height: 178,
-    borderRadius: 20,
+    height: 180,
+    borderRadius: 22,
     flexDirection: "row",
     overflow: "hidden",
-
     elevation: 4,
     shadowOpacity: 0.12,
     shadowRadius: 7,
@@ -776,7 +732,7 @@ const styles = StyleSheet.create({
 
   bannerText: {
     flex: 1,
-    paddingLeft: 18,
+    paddingLeft: 19,
     paddingRight: 5,
     justifyContent: "center",
   },
@@ -784,29 +740,29 @@ const styles = StyleSheet.create({
   bannerSmall: {
     fontSize: 9,
     fontWeight: "700",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     color: "#FFFFFF",
     opacity: 0.75,
-    marginBottom: 6,
+    marginBottom: 7,
   },
 
   bannerTitle: {
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: "800",
     color: "#FFFFFF",
-    lineHeight: 28,
+    lineHeight: 29,
   },
 
   bannerSubtitle: {
     fontSize: 11,
     color: "#FFFFFF",
-    opacity: 0.9,
+    opacity: 0.85,
     lineHeight: 16,
     marginTop: 9,
   },
 
   bannerImageContainer: {
-    width: "42%",
+    width: "41%",
     height: "100%",
   },
 
@@ -816,17 +772,16 @@ const styles = StyleSheet.create({
   },
 
   /* SECTION */
-
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    marginTop: 25,
-    marginBottom: 11,
+    marginTop: 27,
+    marginBottom: 12,
   },
 
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "800",
   },
 
@@ -841,8 +796,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
-  /* STATISTICS */
-
+  /* STAT CARDS */
   statsRow: {
     flexDirection: "row",
     gap: 12,
@@ -850,10 +804,9 @@ const styles = StyleSheet.create({
 
   statCard: {
     flex: 1,
-    borderRadius: 18,
-    padding: 15,
-    minHeight: 153,
-
+    borderRadius: 19,
+    padding: 16,
+    minHeight: 155,
     elevation: 3,
     shadowOpacity: 0.12,
     shadowRadius: 6,
@@ -870,27 +823,18 @@ const styles = StyleSheet.create({
   },
 
   statIcon: {
-    width: 45,
-    height: 45,
+    width: 44,
+    height: 44,
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
   },
 
-  statArrow: {
-    width: 27,
-    height: 27,
-    borderRadius: 9,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   statNumber: {
-    fontSize: 29,
+    fontSize: 30,
     fontWeight: "800",
     color: "#FFFFFF",
-    marginTop: 13,
+    marginTop: 14,
   },
 
   statTitle: {
@@ -904,11 +848,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#FFFFFF",
     opacity: 0.7,
-    marginTop: 3,
+    marginTop: 4,
   },
 
   /* QUICK ACTIONS */
-
   actionRow: {
     flexDirection: "row",
     gap: 12,
@@ -921,7 +864,6 @@ const styles = StyleSheet.create({
     padding: 15,
     minHeight: 145,
     borderWidth: 1,
-
     elevation: 2,
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -935,21 +877,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 16,
   },
 
   actionIcon: {
-    width: 47,
-    height: 47,
+    width: 46,
+    height: 46,
     borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  actionArrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -965,16 +899,14 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  /* RECENT ORDERS */
-
+  /* ORDERS */
   orderCard: {
-    borderRadius: 16,
+    borderRadius: 17,
     padding: 13,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-
     elevation: 2,
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -987,7 +919,7 @@ const styles = StyleSheet.create({
   orderIcon: {
     width: 46,
     height: 46,
-    borderRadius: 13,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1007,19 +939,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  pendingStatus: {
+  statusBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF5E8",
-    paddingHorizontal: 9,
-    paddingVertical: 7,
-    borderRadius: 9,
-  },
-
-  readyStatus: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EAF7EF",
     paddingHorizontal: 9,
     paddingVertical: 7,
     borderRadius: 9,
@@ -1038,16 +960,15 @@ const styles = StyleSheet.create({
   },
 
   /* LOGOUT */
-
   logoutButton: {
     height: 50,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 15,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
-    marginTop: 16,
+    marginTop: 17,
     marginBottom: 10,
   },
 

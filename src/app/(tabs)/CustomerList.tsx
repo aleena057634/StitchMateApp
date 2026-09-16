@@ -12,13 +12,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import ThemeContext from "../../context/ThemeContext"
+import { useContext } from "react";
 import colors from "@/constents/colors";
-
+import CustomAlert from "@/componenets/CustomAlert";
 import {
   DeleteCustomer,
   getCustomers,
-} from "../../databse/CustomerCru";
+} from "../../../databse/CustomerCru";
 
 type customer = {
   ID: number;
@@ -28,10 +29,18 @@ type customer = {
 };
 
 export default function CustomerList() {
-
+  const { theme, isDark, toggleTheme } = useContext(ThemeContext);
   const [search, setSearch] = useState("");
   const [CustomersData, setCustomerData] = useState<customer[]>([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const [editId,setEditId]=useState<number|null>(null);
+  const [showEditAlert,setEditAlert]=useState(false)
+
+  const filteredCustomers = CustomersData.filter((item) =>
+    item.NAME.toLowerCase().includes(search.toLowerCase())
+  );
   // Database se customers load karta hai
   async function LoadCustomer() {
     try {
@@ -65,22 +74,20 @@ export default function CustomerList() {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: colors.background },
+        { backgroundColor: theme.background },
       ]}
     >
       {/* Search */}
       <View style={styles.searchContainer}>
         <SearchBox
           value={search}
-          onChangeText={(e) => {
-            setSearch(e);
-          }}
+          onChangeText={setSearch}
         />
       </View>
 
       {/* Customer List */}
       <FlatList
-        data={CustomersData}
+        data={filteredCustomers}
         keyExtractor={(item) => item.ID.toString()}
         contentContainerStyle={
           CustomersData.length === 0
@@ -94,20 +101,20 @@ export default function CustomerList() {
             <View
               style={[
                 styles.emptyIcon,
-                { backgroundColor: colors.inputBackground },
+                { backgroundColor: theme.inputBackground },
               ]}
             >
               <Ionicons
                 name="people-outline"
                 size={52}
-                color={colors.primary}
+                color={theme.primary}
               />
             </View>
 
             <Text
               style={[
                 styles.emptyTitle,
-                { color: colors.text },
+                { color: theme.text },
               ]}
             >
               No Customers Found
@@ -116,7 +123,7 @@ export default function CustomerList() {
             <Text
               style={[
                 styles.emptyText,
-                { color: colors.secondaryText },
+                { color: theme.secondaryText },
               ]}
             >
               Add a customer to get started.
@@ -128,8 +135,8 @@ export default function CustomerList() {
             style={[
               styles.card,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
+                backgroundColor: theme.card,
+                borderColor: theme.border,
               },
             ]}
             onPress={() => {
@@ -145,13 +152,13 @@ export default function CustomerList() {
             <View
               style={[
                 styles.iconContainer,
-                { backgroundColor: colors.primary },
+                { backgroundColor: theme.primary },
               ]}
             >
               <Text
                 style={[
                   styles.iconText,
-                  { color: colors.white },
+                  { color: theme.white },
                 ]}
               >
                 {item.NAME?.charAt(0).toUpperCase()}
@@ -163,7 +170,7 @@ export default function CustomerList() {
               <Text
                 style={[
                   styles.name,
-                  { color: colors.text },
+                  { color: theme.text },
                 ]}
               >
                 {item.NAME}
@@ -172,7 +179,7 @@ export default function CustomerList() {
               <Text
                 style={[
                   styles.phone,
-                  { color: colors.secondaryText },
+                  { color: theme.secondaryText },
                 ]}
               >
                 {item.PHONE}
@@ -181,7 +188,7 @@ export default function CustomerList() {
               <Text
                 style={[
                   styles.address,
-                  { color: colors.secondaryText },
+                  { color: theme.secondaryText },
                 ]}
               >
                 {item.ADDRESS}
@@ -192,31 +199,17 @@ export default function CustomerList() {
               <Pressable
                 style={[
                   styles.actionButton,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
                 onPress={() => {
-                  Alert.alert(
-                    "Delete Customer",
-                    "Are you sure you want to delete customer permanently?",
-                    [
-                      {
-                        text: "Cancel",
-                        style: "cancel",
-                      },
-                      {
-                        text: "Delete",
-                        style: "destructive",
-                        onPress() {
-                          HandleDeletedCustomer(item.ID);
-                        },
-                      },
-                    ]
-                  );
+                  setDeleteId(item.ID)
+                  setShowAlert(true);
+
                 }}
-              >
+      >
                 <Ionicons
                   name="trash-outline"
-                  color={colors.primary}
+                  color={theme.primary}
                   size={19}
                 />
               </Pressable>
@@ -225,46 +218,67 @@ export default function CustomerList() {
               <Pressable
                 style={[
                   styles.actionButton,
-                  { backgroundColor: colors.background },
+                  { backgroundColor: theme.background },
                 ]}
                 onPress={() => {
-                  Alert.alert(
-                    "Edit Customer",
-                    "Are you sure you want to edit?",
-                    [
-                      {
-                        text: "No",
-                        style: "cancel",
-                      },
-                      {
-  // Yaha hm data pass kr rah ahia doosri screen ma
-                        text: "Yes",
-                        onPress: () => {
-                          router.push({
-                            pathname: "/AddCustomers",
-                            params: {
-                              ID: item.ID.toString(),
-                              NAME: item.NAME,
-                              PHONE: item.PHONE,
-                              ADDRESS: item.ADDRESS,
-                            },
-                          });
-                        },
-                      },
-                    ]
-                  );
+                setEditAlert(true);
+                setEditId(item.ID);
                 }}
               >
                 <Ionicons
-                  name="pencil-outline"
-                  color={colors.primary}
+                  name="create-outline"
+                  color={theme.primary}
                   size={19}
                 />
               </Pressable>
             </View>
           </Pressable>
         )}
+
       />
+      <CustomAlert
+        visible={showAlert}
+        title="Delete Customer"
+        Message="Are you sure you want to delete customer permanently?"
+        onCancel={() => setShowAlert(false)}
+        onConfirm={async () => {
+          if (deleteId !== null) {
+            await HandleDeletedCustomer(deleteId);
+          }
+
+          setShowAlert(false);
+          setDeleteId(null);
+        }}
+      />
+      {/* ya jo hai edit ka lia hai */}
+<CustomAlert
+visible={showEditAlert}
+title="Edit CustomerInformation"
+Message="Are You sure you want to edit Information"
+onCancel={()=>{setEditAlert(false)}}
+onConfirm={() => {
+  const customer = CustomersData.find(
+    (item) => item.ID === editId
+  );
+
+  if (customer) {
+    router.push({
+      pathname: "/AddCustomers",
+      params: {
+        ID: customer.ID.toString(),
+        NAME: customer.NAME,
+        PHONE: customer.PHONE,
+        ADDRESS: customer.ADDRESS,
+      },
+    });
+  }
+
+  setEditAlert(false);
+  setEditId(null);
+}}
+   
+
+/>
 
       {/* Add Customer Floating Button */}
       <FloatingButton

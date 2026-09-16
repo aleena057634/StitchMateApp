@@ -2,7 +2,7 @@
 const colors = {
   primary: "#164E63",
   accent: "#1B4A5A",
-
+ lightGray:"#E5E5E5",
   background: "#F5F7F9",
   card: "#FFFFFF",
   inputBackground: "#EEF5F7",

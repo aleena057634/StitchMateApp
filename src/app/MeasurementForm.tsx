@@ -1,110 +1,257 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { useContext, useEffect, useState } from "react";
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  Pressable,
   View,
 } from "react-native";
-import { useState } from "react";
+
+import ThemeContext from "@/context/ThemeContext";
+
+import {
+  addMeasurement,
+  updateMeasurement,
+} from "../../databse/MeasuremenrCruc";
 
 export default function MeasurementForm() {
+  const { theme } = useContext(ThemeContext);
+
+  const params = useLocalSearchParams();
+
+  const id = params.id;
+  const type = params.type;
+  const measurementId = params.measurementId;
+
+  const Chest = params.Chest;
+  const Waist = params.Waist;
+  const Qameez_Length = params.Qameez_Length;
+  const Shirt_Length = params.Shirt_Length;
+  const Shalwar_Length = params.Shalwar_Length;
+  const Trouser_Length = params.Trouser_Length;
+  const Sleeve = params.Sleeve;
+  const Daman = params.Daman;
+  const Hip = params.Hip;
+  const Thigh = params.Thigh;
+  const Bottom = params.Bottom;
+  const Shoulder = params.Shoulder;
+  const Collar = params.Collar;
+  const Length = params.Length;
+  const Notes = params.Notes;
+
+  console.log("ALL PARAMS:", params);
+  console.log("measurementId:", measurementId);
+
   const [measurement, setMeasurement] = useState({
-    chest: "",
-    waist: "",
-    qameezLength: "",
-    shirtLength: "",
-    shalwarLength: "",
-    trouserLength: "",
-    sleeve: "",
-    daman: "",
-    hip: "",
-    thigh: "",
-    bottom: "",
-    shoulder: "",
-    collar: "",
-    length: "",
-    notes: "",
+    Chest: "",
+    Waist: "",
+    Qameez_Length: "",
+    Shirt_Length: "",
+    Shalwar_Length: "",
+    Trouser_Length: "",
+    Sleeve: "",
+    Daman: "",
+    Hip: "",
+    Thigh: "",
+    Bottom: "",
+    Shoulder: "",
+    Collar: "",
+    Length: "",
+    Notes: "",
   });
 
-  const { id, type } = useLocalSearchParams();
+  useEffect(() => {
+    if (measurementId) {
+      setMeasurement({
+        Chest: Chest?.toString() || "",
+        Waist: Waist?.toString() || "",
+        Qameez_Length: Qameez_Length?.toString() || "",
+        Shirt_Length: Shirt_Length?.toString() || "",
+        Shalwar_Length: Shalwar_Length?.toString() || "",
+        Trouser_Length: Trouser_Length?.toString() || "",
+        Sleeve: Sleeve?.toString() || "",
+        Daman: Daman?.toString() || "",
+        Hip: Hip?.toString() || "",
+        Thigh: Thigh?.toString() || "",
+        Bottom: Bottom?.toString() || "",
+        Shoulder: Shoulder?.toString() || "",
+        Collar: Collar?.toString() || "",
+        Length: Length?.toString() || "",
+        Notes: Notes?.toString() || "",
+      });
+    }
+  }, [measurementId]);
+
+  async function saveMeasurement() {
+    console.log("measurementId:", measurementId);
+    console.log("measurement:", measurement);
+
+    if (measurementId) {
+      const result = await updateMeasurement(
+        Number(measurementId),
+        measurement
+      );
+
+      console.log("Update result:", result);
+    } else {
+      const result = await addMeasurement(
+        Number(id),
+        type?.toString() || "",
+        measurement
+      );
+
+      console.log("Add result:", result);
+    }
+
+    router.dismiss(2);
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{type}</Text>
-      <Text style={styles.customer}>Customer ID: {id}</Text>
+    <ScrollView
+      style={[
+        styles.scrollView,
+        { backgroundColor: theme.background },
+      ]}
+      contentContainerStyle={styles.container}
+    >
+      <Text
+        style={[
+          styles.title,
+          { color: theme.text },
+        ]}
+      >
+        {type}
+      </Text>
+
+      <Text
+        style={[
+          styles.customer,
+          { color: theme.secondaryText },
+        ]}
+      >
+        Customer ID: {id}
+      </Text>
 
       {type === "Male Shalwar Kameez" && (
         <View>
           <TextInput
             placeholder="Chest"
-            style={styles.input}
-            value={measurement.chest}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Chest}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                chest: value,
+                Chest: value,
               })
             }
           />
 
           <TextInput
             placeholder="Waist"
-            style={styles.input}
-            value={measurement.waist}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Waist}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                waist: value,
+                Waist: value,
               })
             }
           />
 
           <TextInput
             placeholder="Qameez Length"
-            style={styles.input}
-            value={measurement.qameezLength}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Qameez_Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                qameezLength: value,
+                Qameez_Length: value,
               })
             }
           />
 
           <TextInput
             placeholder="Shalwar Length"
-            style={styles.input}
-            value={measurement.shalwarLength}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Shalwar_Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                shalwarLength: value,
+                Shalwar_Length: value,
               })
             }
           />
 
           <TextInput
             placeholder="Sleeve"
-            style={styles.input}
-            value={measurement.sleeve}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Sleeve}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                sleeve: value,
+                Sleeve: value,
               })
             }
           />
 
           <TextInput
             placeholder="Daman"
-            style={styles.input}
-            value={measurement.daman}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Daman}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                daman: value,
+                Daman: value,
               })
             }
           />
@@ -115,72 +262,120 @@ export default function MeasurementForm() {
         <View>
           <TextInput
             placeholder="Chest"
-            style={styles.input}
-            value={measurement.chest}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Chest}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                chest: value,
+                Chest: value,
               })
             }
           />
 
           <TextInput
             placeholder="Waist"
-            style={styles.input}
-            value={measurement.waist}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Waist}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                waist: value,
+                Waist: value,
               })
             }
           />
 
           <TextInput
             placeholder="Qameez Length"
-            style={styles.input}
-            value={measurement.qameezLength}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Qameez_Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                qameezLength: value,
+                Qameez_Length: value,
               })
             }
           />
 
           <TextInput
             placeholder="Shalwar Length"
-            style={styles.input}
-            value={measurement.shalwarLength}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Shalwar_Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                shalwarLength: value,
+                Shalwar_Length: value,
               })
             }
           />
 
           <TextInput
             placeholder="Sleeve"
-            style={styles.input}
-            value={measurement.sleeve}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Sleeve}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                sleeve: value,
+                Sleeve: value,
               })
             }
           />
 
           <TextInput
             placeholder="Daman"
-            style={styles.input}
-            value={measurement.daman}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Daman}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                daman: value,
+                Daman: value,
               })
             }
           />
@@ -191,60 +386,100 @@ export default function MeasurementForm() {
         <View>
           <TextInput
             placeholder="Waist"
-            style={styles.input}
-            value={measurement.waist}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Waist}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                waist: value,
+                Waist: value,
               })
             }
           />
 
           <TextInput
             placeholder="Hip"
-            style={styles.input}
-            value={measurement.hip}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Hip}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                hip: value,
+                Hip: value,
               })
             }
           />
 
           <TextInput
             placeholder="Thigh"
-            style={styles.input}
-            value={measurement.thigh}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Thigh}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                thigh: value,
+                Thigh: value,
               })
             }
           />
 
           <TextInput
             placeholder="Bottom"
-            style={styles.input}
-            value={measurement.bottom}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Bottom}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                bottom: value,
+                Bottom: value,
               })
             }
           />
 
           <TextInput
             placeholder="Length"
-            style={styles.input}
-            value={measurement.length}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                length: value,
+                Length: value,
               })
             }
           />
@@ -255,60 +490,100 @@ export default function MeasurementForm() {
         <View>
           <TextInput
             placeholder="Chest"
-            style={styles.input}
-            value={measurement.chest}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Chest}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                chest: value,
+                Chest: value,
               })
             }
           />
 
           <TextInput
             placeholder="Shoulder"
-            style={styles.input}
-            value={measurement.shoulder}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Shoulder}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                shoulder: value,
+                Shoulder: value,
               })
             }
           />
 
           <TextInput
             placeholder="Sleeve"
-            style={styles.input}
-            value={measurement.sleeve}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Sleeve}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                sleeve: value,
+                Sleeve: value,
               })
             }
           />
 
           <TextInput
             placeholder="Collar"
-            style={styles.input}
-            value={measurement.collar}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Collar}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                collar: value,
+                Collar: value,
               })
             }
           />
 
           <TextInput
             placeholder="Length"
-            style={styles.input}
-            value={measurement.length}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                length: value,
+                Length: value,
               })
             }
           />
@@ -319,60 +594,100 @@ export default function MeasurementForm() {
         <View>
           <TextInput
             placeholder="Chest"
-            style={styles.input}
-            value={measurement.chest}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Chest}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                chest: value,
+                Chest: value,
               })
             }
           />
 
           <TextInput
             placeholder="Waist"
-            style={styles.input}
-            value={measurement.waist}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Waist}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                waist: value,
+                Waist: value,
               })
             }
           />
 
           <TextInput
             placeholder="Shoulder"
-            style={styles.input}
-            value={measurement.shoulder}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Shoulder}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                shoulder: value,
+                Shoulder: value,
               })
             }
           />
 
           <TextInput
             placeholder="Sleeve"
-            style={styles.input}
-            value={measurement.sleeve}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Sleeve}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                sleeve: value,
+                Sleeve: value,
               })
             }
           />
 
           <TextInput
             placeholder="Length"
-            style={styles.input}
-            value={measurement.length}
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            value={measurement.Length}
             onChangeText={(value) =>
               setMeasurement({
                 ...measurement,
-                length: value,
+                Length: value,
               })
             }
           />
@@ -381,32 +696,58 @@ export default function MeasurementForm() {
 
       <TextInput
         placeholder="Notes"
-        style={[styles.input, styles.notes]}
-        value={measurement.notes}
+        placeholderTextColor={theme.placeholder}
+        style={[
+          styles.input,
+          styles.notes,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+            color: theme.text,
+          },
+        ]}
+        value={measurement.Notes}
         onChangeText={(value) =>
           setMeasurement({
             ...measurement,
-            notes: value,
+            Notes: value,
           })
         }
         multiline
       />
 
-      <Pressable style={styles.saveButton}>
-        <Text style={styles.saveButtonText}>Save Measurement</Text>
+      <Pressable
+        style={[
+          styles.saveButton,
+          { backgroundColor: theme.primary },
+        ]}
+        onPress={saveMeasurement}
+      >
+        <Text
+          style={[
+            styles.saveButtonText,
+            { color: theme.white },
+          ]}
+        >
+          Save Measurement
+        </Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
+
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 30,
+    flexGrow: 1,
   },
 
   saveButton: {
-    backgroundColor: "#222",
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
@@ -414,7 +755,6 @@ const styles = StyleSheet.create({
   },
 
   saveButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -427,14 +767,11 @@ const styles = StyleSheet.create({
 
   customer: {
     fontSize: 14,
-    color: "#777",
     marginBottom: 25,
   },
 
   input: {
-    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,

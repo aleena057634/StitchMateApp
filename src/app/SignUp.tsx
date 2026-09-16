@@ -1,9 +1,10 @@
+
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,21 +15,32 @@ import {
   View,
 } from "react-native";
 
+import ThemeContext from "@/context/ThemeContext";
 import {
   adduser,
   checkEmail,
   showUsers,
 } from "../../databse/queries";
 import { userTable } from "../../databse/table";
-
-import colors from "../constents/colors";
+import { ConfirmAlert } from "@/componenets/CustomAlert";
 
 export default function SignUp() {
+  const { theme } = useContext(ThemeContext);
+
   const [Username, setName] = useState("");
   const [UserEmail, setEmail] = useState("");
   const [UserPas, setPas] = useState("");
   const [UserPhone, setPhone] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [alertName, setAlertName] = useState(false);
+  const [alertEmail, setAlertEmail] = useState(false);
+  const [alertPhone, setAlertPhone] = useState(false);
+  const [alertPass, setAlertPass] = useState(false);
+  const [alert, showAlert] = useState(false);
+  const [emailPattern, setAlertEmailPattern] = useState(false);
 
   useEffect(() => {
     userTable();
@@ -36,240 +48,409 @@ export default function SignUp() {
 
   async function handleShowUsers() {
     const users = await showUsers();
-    console.log("Current users in database:", users);
   }
 
   async function handlebutton() {
     const email = UserEmail.trim();
 
     if (!Username || !email || !UserPas || !UserPhone) {
-      Alert.alert("Error", "Please fill all fields");
+      showAlert(true);
       return;
     }
 
     const existEmail = await checkEmail(email);
 
     if (existEmail) {
-      Alert.alert(
-        "Email Already Exists",
-        "This email is already registered."
-      );
+      setAlertEmail(true);
       return;
     }
 
     const namePattern = /^[A-Za-z ]+$/;
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phonePattern = /^03\d{9}$/;
+
     const passwordPattern =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/;
 
     if (!namePattern.test(Username)) {
-      Alert.alert(
-        "Invalid Name",
-        "Name can contain letters only"
-      );
+      setAlertName(true);
       return;
     }
 
     if (!emailPattern.test(email)) {
-      Alert.alert(
-        "Invalid Email",
-        "Please enter a valid email"
-      );
+      setAlertEmailPattern(true);
       return;
     }
 
     if (!phonePattern.test(UserPhone)) {
-      Alert.alert(
-        "Invalid Phone",
-        "Enter a valid phone number e.g. 03001234567"
-      );
+      setAlertPhone(true);
       return;
     }
 
     if (!passwordPattern.test(UserPas)) {
-      Alert.alert(
-        "Invalid Password",
-        "Password must contain 8 characters, a number and a special character"
-      );
+      setAlertPass(true);
       return;
     }
 
     try {
       setLoading(true);
 
-    const newUser_id=  await adduser(
+      const newUser_id = await adduser(
         Username,
         email,
         UserPas,
         UserPhone
       );
-      await AsyncStorage.setItem("userId", String(newUser_id));
-       console.log("Saved User ID:", newUser_id);
-      Alert.alert(
-        "Success",
-        "User registered successfully"
+
+      await AsyncStorage.setItem(
+        "userId",
+        String(newUser_id)
       );
 
       router.replace("/Dashbord");
-
-      // console.log("User added");
     } catch (error) {
       console.log("Signup failed:", error);
       setLoading(false);
     }
   }
 
+  const styles = createStyles(theme);
+
   return (
     <KeyboardAvoidingView
-     behavior={Platform.OS === "ios" ? "padding" : "height"}
-  style={{ flex: 1 }}         
+      behavior={
+        Platform.OS === "ios" ? "padding" : "height"
+      }
+      style={styles.keyboardView}
     >
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>
-          Welcome To Sign Up
-        </Text>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.container}>
 
-        <Text style={styles.label}>Name</Text>
+          <View style={styles.header}>
+            <View
+              style={[
+                styles.logoCircle,
+                { backgroundColor: theme.inputBackground },
+              ]}
+            >
+          
+            </View>
 
-        <TextInput
-          style={styles.input}
-          value={Username}
-          onChangeText={setName}
-          placeholder="Enter your name"
-          placeholderTextColor={colors.secondaryText}
-        />
-
-        <Text style={styles.label}>Email</Text>
-
-        <TextInput
-          style={styles.input}
-          value={UserEmail}
-          onChangeText={setEmail}
-          placeholder="Enter your email"
-          placeholderTextColor={colors.secondaryText}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <Text style={styles.label}>Phone</Text>
-
-        <TextInput
-          style={styles.input}
-          value={UserPhone}
-          onChangeText={setPhone}
-          placeholder="Enter your phone"
-          placeholderTextColor={colors.secondaryText}
-          keyboardType="phone-pad"
-        />
-
-        <Text style={styles.label}>Password</Text>
-
-        <TextInput
-          style={styles.input}
-          value={UserPas}
-          onChangeText={setPas}
-          placeholder="Enter your password"
-          placeholderTextColor={colors.secondaryText}
-          secureTextEntry
-        />
-
-        <Pressable
-          style={styles.button}
-          onPress={handlebutton}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator
-              size="small"
-              color="#FFFFFF"
-            />
-          ) : (
-            <Text style={styles.buttonText}>
-              Sign Up
+            <Text style={styles.title}>
+              Create Account
             </Text>
-          )}
-        </Pressable>
 
-        <Text style={styles.signin}>
-          Already have an Account?{" "}
-          <Link
-            href="/SignIn"
-            style={styles.signinLink}
-          >
-            Sign In
-          </Link>
-        </Text>
-      </View>
+            <Text style={styles.subtitle}>
+              Sign up to start managing your tailor business
+            </Text>
+          </View>
 
-    </ScrollView>
+          <View style={styles.form}>
+
+            <Text style={styles.label}>
+              Name
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color={theme.primary}
+              />
+
+              <TextInput
+                style={styles.input}
+                value={Username}
+                onChangeText={setName}
+                placeholder="Enter your name"
+                placeholderTextColor={theme.placeholder}
+              />
+            </View>
+
+            <Text style={styles.label}>
+              Email
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="mail-outline"
+                color={theme.primary}
+                size={20}
+              />
+
+              <TextInput
+                style={styles.input}
+                value={UserEmail}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                placeholderTextColor={theme.placeholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <Text style={styles.label}>
+              Phone
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="call-outline"
+                color={theme.primary}
+                size={20}
+              />
+
+              <TextInput
+                style={styles.input}
+                value={UserPhone}
+                onChangeText={setPhone}
+                placeholder="03001234567"
+                placeholderTextColor={theme.placeholder}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <Text style={styles.label}>
+              Password
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="lock-closed-outline"
+                color={theme.primary}
+                size={20}
+              />
+
+              <TextInput
+                style={styles.input}
+                value={UserPas}
+                onChangeText={setPas}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.placeholder}
+                secureTextEntry={!showPassword}
+              />
+
+              <Pressable
+                onPress={() =>
+                  setShowPassword(!showPassword)
+                }
+              >
+                <Ionicons
+                  name={
+                    showPassword
+                      ? "eye"
+                      : "eye-off"
+                  }
+                  size={20}
+                  color={theme.primary}
+                />
+              </Pressable>
+            </View>
+
+            {loading ? (
+              <View style={styles.loader}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.primary}
+                />
+              </View>
+            ) : (
+              <Pressable
+                style={styles.button}
+                onPress={handlebutton}
+              >
+                <Text style={styles.buttonText}>
+                  Create Account
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          <Text style={styles.signin}>
+            Already have an account?{" "}
+
+            <Link
+              href="/SignIn"
+              style={styles.signinLink}
+            >
+              Sign In
+            </Link>
+          </Text>
+
+          <ConfirmAlert
+            visible={alert}
+            title="Error"
+            Message="All Fields are required"
+            onConfirm={() => {
+              showAlert(false);
+            }}
+          />
+
+          <ConfirmAlert
+            visible={alertPass}
+            title="Password"
+            Message="Password must contain 8 characters, a number and a special character"
+            onConfirm={() => {
+              setAlertPass(false);
+            }}
+          />
+
+          <ConfirmAlert
+            visible={alertPhone}
+            title="Invalid Phone"
+            Message="Enter a valid phone number e.g. 03001234567"
+            onConfirm={() => {
+              setAlertPhone(false);
+            }}
+          />
+
+          <ConfirmAlert
+            visible={alertName}
+            title="Invalid Name"
+            Message="Name can contain letters only"
+            onConfirm={() => {
+              setAlertName(false);
+            }}
+          />
+
+          <ConfirmAlert
+            visible={alertEmail}
+            title="Email"
+            Message="This email is already registered."
+            onConfirm={() => {
+              setAlertEmail(false);
+            }}
+          />
+
+          <ConfirmAlert
+            visible={emailPattern}
+            title="Email Pattern"
+            Message="Please enter a valid email."
+            onConfirm={() => {
+              setAlertEmailPattern(false);
+            }}
+          />
+
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 25,
-    paddingTop: 70,
-    paddingBottom: 40,
-  },
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: colors.primary,
-    textAlign: "center",
-    marginBottom: 40,
-  },
+    scrollContent: {
+      flexGrow: 1,
+    },
 
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 8,
-  },
+    container: {
+      flexGrow: 1,
+      paddingHorizontal: 25,
+      paddingTop: 45,
+      paddingBottom: 35,
+      justifyContent: "center",
+    },
 
-  input: {
-    height: 52,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    marginBottom: 20,
-    color: colors.text,
-  },
+    header: {
+      alignItems: "center",
+      marginBottom: 30,
+    },
 
-  button: {
-    height: 52,
-    backgroundColor: colors.primary,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-    elevation: 3,
-  },
+    logoCircle: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 14,
+    },
 
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontWeight: "bold",
-  },
+    title: {
+      fontSize: 29,
+      fontWeight: "800",
+      color: theme.primary,
+      textAlign: "center",
+    },
 
-  signin: {
-    textAlign: "center",
-    marginTop: 25,
-    color: colors.secondaryText,
-    fontSize: 15,
-  },
+    subtitle: {
+      fontSize: 13,
+      color: theme.secondaryText,
+      textAlign: "center",
+      marginTop: 7,
+      lineHeight: 19,
+      paddingHorizontal: 20,
+    },
 
-  signinLink: {
-    color: colors.primary,
-    fontWeight: "bold",
-  },
-});
+    form: {
+      width: "100%",
+    },
+
+    label: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: theme.text,
+      marginBottom: 7,
+    },
+
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      height: 52,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 16,
+      paddingHorizontal: 15,
+      marginBottom: 17,
+    },
+
+    input: {
+      flex: 1,
+      marginLeft: 13,
+      fontSize: 15,
+      color: theme.text,
+    },
+
+    button: {
+      height: 53,
+      backgroundColor: theme.primary,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 5,
+      elevation: 3,
+    },
+
+    buttonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+
+    loader: {
+      height: 53,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    signin: {
+      textAlign: "center",
+      marginTop: 22,
+      color: theme.secondaryText,
+      fontSize: 14,
+    },
+
+    signinLink: {
+      color: theme.primary,
+      fontWeight: "800",
+    },
+  });

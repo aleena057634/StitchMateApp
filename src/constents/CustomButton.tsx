@@ -1,5 +1,7 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useContext } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
-import colors from "./colors";
+import ThemeContext from "@/context/ThemeContext";
 
 type CustomButtonProps = {
   title: string;
@@ -10,14 +12,34 @@ export default function CustomSaveButton({
   title,
   onPress,
 }: CustomButtonProps) {
+  const { theme } = useContext(ThemeContext);
+
   return (
     <Pressable
-      style={styles.button}
+      style={[
+        styles.button,
+        {
+          backgroundColor: theme.primary,
+        },
+      ]}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>
+      <Text
+        style={[
+          styles.buttonText,
+          {
+            color: theme.white,
+          },
+        ]}
+      >
         {title}
       </Text>
+
+      <Ionicons
+        name="arrow-forward"
+        size={20}
+        color={theme.white}
+      />
     </Pressable>
   );
 }
@@ -25,17 +47,18 @@ export default function CustomSaveButton({
 const styles = StyleSheet.create({
   button: {
     height: 52,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
+    borderRadius: 16,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 8,
     marginTop: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 18,
+    elevation: 3,
   },
 
   buttonText: {
-    color: colors.white,
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
   },
 });
