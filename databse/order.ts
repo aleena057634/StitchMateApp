@@ -61,12 +61,12 @@ export async function addOrder(
     const userId = await AsyncStorage.getItem("userId");
 
     // Agar user login nahi hai to order add nahi hoga
-    if (!userId) {
-      console.log("User ID not found");
-      return;
-    }
+   if (!userId) {
+  console.log("User ID not found");
+  throw new Error("User ID not found");
+}
 
-    await db.runAsync(
+    const result = await db.runAsync(
       `INSERT INTO ORDERS (
         ORDER_NAME,
         QUANTITY,
@@ -101,8 +101,11 @@ export async function addOrder(
 
     console.log("Order added successfully");
 
+    return result;
+
   } catch (error) {
     console.log("Failed to add order:", error);
+    throw error;
   }
 }
 

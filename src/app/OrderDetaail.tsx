@@ -9,9 +9,12 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View,Image,
+  Touchable,
+  TouchableOpacity
 } from "react-native";
 
+import { getOrderImage,deleteOrderImage ,Update_OrderImage} from "../../databse/ImageCrud"
 import {
   Mark,
   Order_detail,
@@ -19,9 +22,9 @@ import {
   updateOrderStatus,
 } from "../../databse/order";
 
-import CustomAlert, { ConfirmAlert } from "../componenets/CustomAlert";
+import CustomAlert, { ConfirmAlert, ProfileImageModal } from "../componenets/CustomAlert";
 import ThemeContext from "../context/ThemeContext";
-
+import * as ImagePicker from "expo-image-picker";
 export default function OrderDetail() {
   const { orderId } = useLocalSearchParams();
 
@@ -41,11 +44,39 @@ export default function OrderDetail() {
     useState(false);
   const [paymentAmount, setPaymentAmount] = useState(0);
 
+  const [orderImage, setOrderImage] = useState<string | null>(null);
+  const[deleteAlert,setDeleteAlert]=useState(false);
+const [updateAlert, setUpdateAlert]=useState(false);
+const [ImageAlert, setImageAlert] = useState(false);
+const takePhotoForUpdate = async () => {
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+  if (!permission.granted) {
+    return;
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ["images"],
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    const newImageUri = result.assets[0].uri;
+
+    await updateOrderImage(newImageUri);
+
+    setImageAlert(false);
+  }
+};
   const onPartialConfirm = async () => {
     await Partial_Payment(
       Number(orderId),
       paymentAmount
     );
+    // image get code 
+    ;
 
     setPartialAmount("");
     setPartialConfirmAlert(false);
@@ -58,7 +89,31 @@ export default function OrderDetail() {
     await loadOrderDetail();
     router.replace("/Payment");
   };
+  // orderImage
+  const OrderImage = async () => {
+    const imageUri = await getOrderImage(Number(orderId));
 
+    if (imageUri) {
+      setOrderImage(imageUri);
+    }
+  };
+
+  const pickImageForUpdate = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    const newImageUri = result.assets[0].uri;
+
+    await updateOrderImage(newImageUri);
+
+    setImageAlert(false);
+  }
+};
   async function loadOrderDetail() {
     try {
       setLoading(true);
@@ -72,9 +127,19 @@ export default function OrderDetail() {
       setLoading(false);
     }
   }
+  const delete_image= async()=>{
+    await deleteOrderImage(Number(orderId));
+    setOrderImage("");
+  }
+
+ const updateOrderImage = async (newImageUri: string) => {
+ await Update_OrderImage(newImageUri, Number(orderId));
+  setOrderImage(newImageUri);
+};
 
   useEffect(() => {
     loadOrderDetail();
+    OrderImage();
   }, [orderId]);
 
   const handleStatusChange = async (status: string) => {
@@ -150,6 +215,7 @@ export default function OrderDetail() {
             Order Details
           </Text>
 
+{/* ============================= */}
           <Text style={styles.subtitle}>
             Order #{order.ORDER_ID}
           </Text>
@@ -503,6 +569,8 @@ export default function OrderDetail() {
         </View>
       </View>
 
+      
+
       {order.NOTES ? (
         <>
           <Text style={styles.sectionTitle}>
@@ -522,6 +590,67 @@ export default function OrderDetail() {
           </View>
         </>
       ) : null}
+  {orderImage && (
+  <View style={styles.imageContainer}>
+    <Image
+      source={{ uri: orderImage }}
+      style={styles.orderImage}
+    />
+
+    <View style={styles.imageActions}>
+      <TouchableOpacity
+        style={styles.imageActionButton}
+        onPress={() => {
+          setDeleteAlert(true);
+        }}
+      >
+        <Ionicons
+          name="trash-outline"
+          size={20}
+          color={theme.white}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.imageActionButton}
+        onPress={() => {
+          setUpdateAlert(true);
+        }}
+      >
+        <Ionicons
+          name="pencil-outline"
+          size={20}
+          color={theme.white}
+        />
+      </TouchableOpacity>
+    </View>
+  </View>
+)}
+<CustomAlert
+  visible={deleteAlert}
+  title="Delete Order Design"
+  Message="Are you sure you want to Delete design?"
+  onCancel={() => {
+    setDeleteAlert(false);
+  }}
+  onConfirm={async () => {
+    await delete_image();
+    setDeleteAlert(false);
+  }}
+/>
+<CustomAlert
+visible={updateAlert}
+title="Update design"
+Message="Are you sure you want to Update design?"
+onCancel={()=>{setUpdateAlert(false)}}
+onConfirm={()=>{updateOrderImage}}
+/>
+<ProfileImageModal
+  visible={ImageAlert}
+  onClose={() => setImageAlert(false)}
+  onCamera={takePhotoForUpdate}
+  onGallery={pickImageForUpdate}
+/>
 
       <ConfirmAlert
         visible={ShowAlert}
@@ -580,14 +709,42 @@ const createStyles = (theme: any) =>
     container: {
       flex: 1,
       backgroundColor: theme.background,
-      marginBottom:30
+      marginBottom: 30
     },
 
     content: {
       padding: 16,
       paddingBottom: 35,
     },
+imageContainer: {
+  position: "relative",
+  marginTop: 10,
+  borderRadius: 12,
+  overflow: "hidden",
+},
 
+orderImage: {
+  width: "100%",
+  height: 200,
+  borderRadius: 12,
+},
+
+imageActions: {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  flexDirection: "row",
+  gap: 8,
+},
+
+imageActionButton: {
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "rgba(0,0,0,0.6)",
+},
     header: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -830,6 +987,11 @@ const createStyles = (theme: any) =>
     paymentActions: {
       marginTop: 18,
     },
+//     orderImage: {
+//   width: "100%",
+//   height: 200,
+//   borderRadius: 12,
+// },
 
     actionTitle: {
       fontSize: 14,

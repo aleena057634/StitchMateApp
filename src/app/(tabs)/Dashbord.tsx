@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useContext, useEffect, useState } from "react";
 import {
@@ -11,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
@@ -19,35 +17,84 @@ import {
   getTotalCustomers,
   Measurement_table,
 } from "../../../databse/table";
-import { TotalOrders ,getUrgentOrders} from "../../../databse/order";
+import { TotalOrders, getUrgentOrders } from "../../../databse/order";
 import ThemeContext from "../../context/ThemeContext";
+import {
+  ProfileImage,
+  saveProfileImage,
+  getProfileImage,
+} from "../../../databse/ImageCrud";
+import { ProfileImageModal } from "@/componenets/CustomAlert";
+import * as ImagePicker from "expo-image-picker";
 
-export default function Dashbord() {
+export default function Dashboard() {
   const { theme } = useContext(ThemeContext);
 
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [Name, setName] = useState("");
   const [TotalOrder, setTotalOrder] = useState(0);
-  const [orders,setOrders]=useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [animatedOrder, setAnimatedOrder] = useState(0);
+  const [ImageAlert, showImageAlert] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+
+      setProfileImage(imageUri);
+
+      await saveProfileImage(imageUri);
+    }
+  };
+
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+       allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+
+      setProfileImage(imageUri);
+
+      await saveProfileImage(imageUri);
+    }
+  };
 
   const UrgentOrder = async () => {
-  try {
-    const data = await getUrgentOrders();
-    setOrders(data);
-  } catch (error) {
-    console.log("Failed to load urgent orders:", error);
-  }
-};
+    try {
+      const data = await getUrgentOrders();
+      setOrders(data);
+    } catch (error) {
+      console.log("Failed to load urgent orders:", error);
+    }
+  };
 
-useFocusEffect(
-  useCallback(() => {
-    UrgentOrder();
-  }, [])
-);
-  const [animatedOrder, setAnimatedOrder] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      UrgentOrder();
+    }, [])
+  );
 
   useEffect(() => {
     Measurement_table();
+    ProfileImage();
 
     const LoadName = async () => {
       const username = await getCustomerName();
@@ -61,7 +108,6 @@ useFocusEffect(
 
     const loadOrders = async () => {
       const count = await TotalOrders();
-
       setTotalOrder(count);
 
       if (count === 0) {
@@ -73,15 +119,22 @@ useFocusEffect(
 
       const interval = setInterval(() => {
         current++;
-
         setAnimatedOrder(current);
 
         if (current >= count) {
           clearInterval(interval);
         }
       }, 100);
+
+      return () => clearInterval(interval);
     };
 
+    const LoadProfileImage = async () => {
+      const image = await getProfileImage();
+      setProfileImage(image);
+    };
+
+    LoadProfileImage();
     loadCustomers();
     loadOrders();
     LoadName();
@@ -89,200 +142,299 @@ useFocusEffect(
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: theme.background },
-      ]}
-    >
+  edges={[]}
+  style={[
+    styles.container,
+    { backgroundColor: theme.background },
+  ]}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
         {/* HEADER */}
         <View style={styles.header}>
-          <View style={styles.headerText}>
-            <Text
+          <View style={styles.userSection}>
+            <View
               style={[
-                styles.smallText,
-                { color: theme.secondaryText },
+                styles.userIcon,
+                {
+                  backgroundColor: theme.card,
+                  borderWidth: 1,
+                  borderColor: theme.primary,
+                },
               ]}
             >
-              Welcome back,
-            </Text>
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <Ionicons
+                  name="person-outline"
+                  size={21}
+                  color={theme.primary}
+                />
+              )}
 
-            <Text
-              style={[
-                styles.userName,
-                { color: theme.text },
-              ]}
-            >
-              {Name || "Tailor"}
-            </Text>
+              <View
+                style={[
+                  styles.cameraIcon,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: theme.primary,
+                  },
+                ]}
+              >
+                <Pressable
+                  onPress={() => {
+                    showImageAlert(true);
+                  }}
+                >
+                  <Ionicons
+                    name="camera-outline"
+                    size={13}
+                    color={theme.primary}
+                  />
+                </Pressable>
+              </View>
+            </View>
+{/* <View>
+  <Text
+    style={[
+     
+      { color: theme.secondaryText },
+    ]}
+  >
+    Welcome back, {Name || "Tailor"}
+  </Text>
+
+  <Text
+    style={[
+      styles.name,
+      {
+        color: theme.text,
+        fontFamily: "serif",
+        fontWeight: "bold",
+      },
+    ]}
+  >
+    Let's get stitching!
+  </Text>
+</View> */}
+<View style={{marginStart:5}}>
+  <Text style={{fontStyle:"italic"}} >Welcome back,</Text>
+  <Text style={{fontFamily:"serif", }}>  {Name || "Tailor"}</Text>
+
+</View>
           </View>
 
           <TouchableOpacity
             style={[
-              styles.profileIcon,
+              styles.settingsButton,
               {
                 backgroundColor: theme.card,
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => {
-              router.push("/Setting");
-            }}
+            onPress={() => router.push("/Setting")}
           >
             <Ionicons
               name="settings-outline"
-              size={22}
+              size={21}
               color={theme.primary}
             />
           </TouchableOpacity>
         </View>
 
-        {/* WELCOME BANNER */}
+        {/* FLOW OF ORDERS */}
         <View
           style={[
-            styles.banner,
-            { backgroundColor: theme.primary },
+            styles.flowCard,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
           ]}
         >
-          <View style={styles.bannerText}>
-            <Text style={styles.bannerSmall}>
-              TAILOR MANAGEMENT
-            </Text>
+          <View style={styles.flowHeader}>
+            <View>
+              <Text
+                style={[
+                  styles.flowTitle,
+                  { color: theme.text },
+                ]}
+              >
+                Flow of Orders
+              </Text>
 
-            <Text style={styles.bannerTitle}>
-              Your Style,{"\n"}Your Stitch
-            </Text>
+              <Text
+                style={[
+                  styles.flowSubtitle,
+                  { color: theme.secondaryText },
+                ]}
+              >
+                Your orders overview
+              </Text>
+            </View>
 
-            <Text style={styles.bannerSubtitle}>
-              Manage customers, measurements
-              {"\n"}and orders effortlessly.
-            </Text>
+            <View
+              style={[
+                styles.orderCountBox,
+                { backgroundColor: theme.primary },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.orderCount,
+                  { color: theme.white },
+                ]}
+              >
+                {animatedOrder}
+              </Text>
+
+              <Text
+                style={[
+                  styles.orderCountText,
+                  { color: theme.white },
+                ]}
+              >
+                ORDERS
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.bannerImageContainer}>
-            <Image
-              source={require("../../../assets/images/t2.jpg")}
-              style={styles.bannerImage}
-              resizeMode="cover"
+          <View style={styles.flow}>
+            <View
+              style={[
+                styles.flowLine,
+                { backgroundColor: theme.border },
+              ]}
             />
-          </View>
-        </View>
 
-        {/* OVERVIEW */}
-        <View style={styles.sectionHeader}>
-          <View>
+            <View style={styles.flowItem}>
+              <View
+                style={[
+                  styles.flowCircle,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={17}
+                  color={theme.white}
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.flowText,
+                  { color: theme.text },
+                ]}
+              >
+                Pending
+              </Text>
+            </View>
+
+            <View style={styles.flowItem}>
+              <View
+                style={[
+                  styles.flowCircle,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Ionicons
+                  name="construct-outline"
+                  size={17}
+                  color={theme.white}
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.flowText,
+                  { color: theme.text },
+                ]}
+              >
+                In Progress
+              </Text>
+            </View>
+
+            <View style={styles.flowItem}>
+              <View
+                style={[
+                  styles.flowCircle,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Ionicons
+                  name="checkmark-outline"
+                  size={17}
+                  color={theme.white}
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.flowText,
+                  { color: theme.text },
+                ]}
+              >
+                Ready
+              </Text>
+            </View>
+
+            <View style={styles.flowItem}>
+              <View
+                style={[
+                  styles.flowCircle,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Ionicons
+                  name="bag-check-outline"
+                  size={17}
+                  color={theme.white}
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.flowText,
+                  { color: theme.text },
+                ]}
+              >
+                Delivered
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.viewOrdersButton,
+              {
+                borderColor: theme.border,
+                backgroundColor: theme.background,
+              },
+            ]}
+            onPress={() => router.push("/OrderList")}
+          >
             <Text
               style={[
-                styles.sectionTitle,
+                styles.viewOrdersText,
                 { color: theme.text },
               ]}
             >
-              Overview
+              View all orders
             </Text>
 
-            <Text
-              style={[
-                styles.sectionSubTitle,
-                { color: theme.secondaryText },
-              ]}
-            >
-              Your business at a glance
-            </Text>
-          </View>
-        </View>
-
-        {/* STATISTICS */}
-        <View style={styles.statsRow}>
-          {/* CUSTOMERS */}
-          <Pressable
-            style={[
-              styles.statCard,
-              { backgroundColor: theme.primary },
-            ]}
-            onPress={() => {
-              router.push("/CustomerList");
-            }}
-          >
-            <View style={styles.statTop}>
-              <View
-                style={[
-                  styles.statIcon,
-                  { backgroundColor: theme.card },
-                ]}
-              >
-                <Ionicons
-                  name="people-outline"
-                  size={21}
-                  color={theme.primary}
-                />
-              </View>
-
-              <Ionicons
-                name="arrow-up-outline"
-                size={18}
-                color={theme.white}
-              />
-            </View>
-
-            <Text style={styles.statNumber}>
-              {totalCustomers}
-            </Text>
-
-            <Text style={styles.statTitle}>
-              Customers
-            </Text>
-
-            <Text style={styles.statHint}>
-              Total customers
-            </Text>
-          </Pressable>
-
-          {/* ORDERS */}
-          <Pressable
-            style={[
-              styles.statCard,
-              { backgroundColor: theme.primary },
-            ]}
-            onPress={() => {
-              router.push("/OrderList");
-            }}
-          >
-            <View style={styles.statTop}>
-              <View
-                style={[
-                  styles.statIcon,
-                  { backgroundColor: theme.card },
-                ]}
-              >
-                <Ionicons
-                  name="receipt-outline"
-                  size={21}
-                  color={theme.primary}
-                />
-              </View>
-
-              <Ionicons
-                name="arrow-up-outline"
-                size={18}
-                color={theme.white}
-              />
-            </View>
-
-            <Text style={styles.statNumber}>
-              {animatedOrder}
-            </Text>
-
-            <Text style={styles.statTitle}>
-              Orders
-            </Text>
-
-            <Text style={styles.statHint}>
-              Total orders
-            </Text>
-          </Pressable>
+            <Ionicons
+              name="arrow-forward-outline"
+              size={15}
+              color={theme.primary}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* QUICK ACTIONS */}
@@ -299,17 +451,16 @@ useFocusEffect(
 
             <Text
               style={[
-                styles.sectionSubTitle,
+                styles.sectionSubtitle,
                 { color: theme.secondaryText },
               ]}
             >
-              Common tasks
+              Manage your tailor shop
             </Text>
           </View>
         </View>
 
-        {/* ACTION ROW 1 */}
-        <View style={styles.actionRow}>
+        <View style={styles.actionGrid}>
           {/* ADD CUSTOMER */}
           <Pressable
             style={[
@@ -319,28 +470,18 @@ useFocusEffect(
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => {
-              router.push("/AddCustomers");
-            }}
+            onPress={() => router.push("/AddCustomers")}
           >
-            <View style={styles.actionTop}>
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Ionicons
-                  name="person-add-outline"
-                  size={22}
-                  color={theme.primary}
-                />
-              </View>
-
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
               <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={theme.secondaryText}
+                name="person-add-outline"
+                size={20}
+                color={theme.primary}
               />
             </View>
 
@@ -351,15 +492,6 @@ useFocusEffect(
               ]}
             >
               Add Customer
-            </Text>
-
-            <Text
-              style={[
-                styles.actionSubText,
-                { color: theme.secondaryText },
-              ]}
-            >
-              Create new customer
             </Text>
           </Pressable>
 
@@ -372,28 +504,18 @@ useFocusEffect(
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => {
-              router.push("/AddOrder");
-            }}
+            onPress={() => router.push("/AddOrder")}
           >
-            <View style={styles.actionTop}>
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={22}
-                  color={theme.primary}
-                />
-              </View>
-
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
               <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={theme.secondaryText}
+                name="create-outline"
+                size={20}
+                color={theme.primary}
               />
             </View>
 
@@ -405,21 +527,9 @@ useFocusEffect(
             >
               Add Order
             </Text>
-
-            <Text
-              style={[
-                styles.actionSubText,
-                { color: theme.secondaryText },
-              ]}
-            >
-              Create new order
-            </Text>
           </Pressable>
-        </View>
 
-        {/* ACTION ROW 2 */}
-        <View style={styles.actionRow}>
-          {/* MEASUREMENT */}
+          {/* PAYMENT */}
           <Pressable
             style={[
               styles.actionCard,
@@ -428,28 +538,18 @@ useFocusEffect(
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => {
-              router.push("/Payment");
-            }}
+            onPress={() => router.push("/Payment")}
           >
-            <View style={styles.actionTop}>
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Ionicons
-                  name="book-outline"
-                  size={22}
-                  color={theme.primary}
-                />
-              </View>
-
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
               <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={theme.secondaryText}
+                name="wallet-outline"
+                size={20}
+                color={theme.primary}
               />
             </View>
 
@@ -459,16 +559,7 @@ useFocusEffect(
                 { color: theme.text },
               ]}
             >
-             Payment
-            </Text>
-
-            <Text
-              style={[
-                styles.actionSubText,
-                { color: theme.secondaryText },
-              ]}
-            >
-             See Payment history
+              Payment
             </Text>
           </Pressable>
 
@@ -481,28 +572,18 @@ useFocusEffect(
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => {
-              router.push("/CustomerList");
-            }}
+            onPress={() => router.push("/CustomerList")}
           >
-            <View style={styles.actionTop}>
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Ionicons
-                  name="people-outline"
-                  size={22}
-                  color={theme.primary}
-                />
-              </View>
-
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
               <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={theme.secondaryText}
+                name="people-outline"
+                size={20}
+                color={theme.primary}
               />
             </View>
 
@@ -517,156 +598,231 @@ useFocusEffect(
 
             <Text
               style={[
-                styles.actionSubText,
-                { color: theme.secondaryText },
+                styles.actionNumber,
+                { color: theme.text },
               ]}
             >
-              View all customers
+              {totalCustomers}
+            </Text>
+          </Pressable>
+
+          {/* ORDERS */}
+          <Pressable
+            style={[
+              styles.actionCard,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
+            onPress={() => router.push("/OrderList")}
+          >
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
+              <Ionicons
+                name="receipt-outline"
+                size={20}
+                color={theme.primary}
+              />
+            </View>
+
+            <Text
+              style={[
+                styles.actionTitle,
+                { color: theme.text },
+              ]}
+            >
+              Orders
+            </Text>
+
+            <Text
+              style={[
+                styles.actionNumber,
+                { color: theme.text },
+              ]}
+            >
+              {TotalOrder}
+            </Text>
+          </Pressable>
+
+          {/* URGENT */}
+          <Pressable
+            style={[
+              styles.actionCard,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
+            onPress={() => router.push("/OrderList")}
+          >
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: theme.background },
+              ]}
+            >
+              <Ionicons
+                name="alert-circle-outline"
+                size={20}
+                color={theme.warning}
+              />
+            </View>
+
+            <Text
+              style={[
+                styles.actionTitle,
+                { color: theme.text },
+              ]}
+            >
+              Urgent
+            </Text>
+
+            <Text
+              style={[
+                styles.actionNumber,
+                { color: theme.warning },
+              ]}
+            >
+              {orders.length}
             </Text>
           </Pressable>
         </View>
 
         {/* URGENT ORDERS */}
-<View style={styles.sectionHeader}>
-  <View>
-    <Text
-      style={[
-        styles.sectionTitle,
-        { color: theme.text },
-      ]}
-    >
-      Urgent Orders
-    </Text>
+        {orders.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: theme.text },
+                  ]}
+                >
+                  Urgent Orders
+                </Text>
 
-    <Text
-      style={[
-        styles.sectionSubTitle,
-        { color: theme.secondaryText },
-      ]}
-    >
-      Orders that need attention
-    </Text>
-  </View>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  Orders that need attention
+                </Text>
+              </View>
 
-  <Pressable
-    onPress={() => {
-      router.push("/OrderList");
-    }}
-  >
-    <Text
-      style={[
-        styles.viewAll,
-        { color: theme.primary },
-      ]}
-    >
-      View all
-    </Text>
-  </Pressable>
-</View>
+              <TouchableOpacity
+                onPress={() => router.push("/OrderList")}
+              >
+                <Text
+                  style={[
+                    styles.viewAll,
+                    { color: theme.primary },
+                  ]}
+                >
+                  View All
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-{orders.length === 0 ? (
-  <View
-    style={[
-      styles.orderCard,
-      {
-        backgroundColor: theme.card,
-        borderColor: theme.border,
-      },
-    ]}
-  >
-    <Text
-      style={[
-        styles.orderDetail,
-        {
-          color: theme.secondaryText,
-          textAlign: "center",
-          flex: 1,
-        },
-      ]}
-    >
-      No urgent orders
-    </Text>
-  </View>
-) : (
-  orders.map((order) => (
-    <Pressable
-      key={order.ORDER_ID}
-      style={[
-        styles.orderCard,
-        {
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-        },
-      ]}
-      onPress={() => {
-        router.push({
-          pathname: "/OrderDetaail",
-          params: {
-            ORDER_ID: order.ORDER_ID,
-          },
-        });
-      }}
-    >
-      <View
-        style={[
-          styles.orderIcon,
-          { backgroundColor: theme.background },
-        ]}
-      >
-        <Ionicons
-          name="shirt-outline"
-          size={21}
-          color={theme.primary}
+            {orders.map((order) => (
+              <Pressable
+                key={order.ORDER_ID}
+                style={[
+                  styles.orderCard,
+                  {
+                    backgroundColor: theme.card,
+                    borderColor: theme.border,
+                  },
+                ]}
+                onPress={() =>
+                  router.push({
+                    pathname: "/OrderDetaail",
+                    params: {
+                      orderId: order.ORDER_ID,
+                    },
+                  })
+                }
+              >
+                <View
+                  style={[
+                    styles.orderIcon,
+                    { backgroundColor: theme.background },
+                  ]}
+                >
+                  <Ionicons
+                    name="alert-outline"
+                    size={21}
+                    color={theme.warning}
+                  />
+                </View>
+
+                <View style={styles.orderInfo}>
+                  <Text
+                    style={[
+                      styles.orderName,
+                      { color: theme.text },
+                    ]}
+                  >
+                    {order.NAME || "Customer"}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.orderDetail,
+                      { color: theme.secondaryText },
+                    ]}
+                  >
+                    {order.ORDER_NAME || "Urgent Order"}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.urgentBadge,
+                    { backgroundColor: theme.warning },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.urgentText,
+                      { color: theme.white },
+                    ]}
+                  >
+                    URGENT
+                  </Text>
+                </View>
+
+                <Ionicons
+                  name="chevron-forward-outline"
+                  size={18}
+                  color={theme.secondaryText}
+                />
+              </Pressable>
+            ))}
+          </>
+        )}
+
+        <ProfileImageModal
+          visible={ImageAlert}
+          onClose={() => {
+            showImageAlert(false);
+          }}
+          onCamera={() => {
+            showImageAlert(false);
+            takePhoto();
+          }}
+          onGallery={() => {
+            showImageAlert(false);
+            pickImage();
+          }}
         />
-      </View>
-
-      <View style={styles.orderInfo}>
-        <Text
-          style={[
-            styles.orderName,
-            { color: theme.text },
-          ]}
-        >
-          {order.NAME || "Customer"}
-        </Text>
-
-        <Text
-          style={[
-            styles.orderDetail,
-            { color: theme.secondaryText },
-          ]}
-        >
-          {order.ORDER_NAME || "Order"} • #{order.ORDER_ID}
-        </Text>
-      </View>
-
-      <View
-        style={[
-          styles.statusBox,
-          { backgroundColor: theme.background },
-        ]}
-      >
-        <View
-          style={[
-            styles.statusDot,
-            { backgroundColor: theme.danger },
-          ]}
-        />
-
-        <Text
-          style={[
-            styles.statusText,
-            { color: theme.danger },
-          ]}
-        >
-          Urgent
-        </Text>
-      </View>
-    </Pressable>
-  ))
-)}
-
-        
       </ScrollView>
     </SafeAreaView>
   );
@@ -675,140 +831,79 @@ useFocusEffect(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding:20,
   },
-
+// greeting: {
+//   fontSize: 14,
+//   fontWeight: "500",
+//   marginBottom: 2,
+// },
   scrollContainer: {
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 35,
+    // paddingHorizontal: 18,
+    // paddingTop: 8,
+    // paddingBottom: 40,
   },
 
-  /* HEADER */
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 18,
   },
 
-  headerText: {
-    flex: 1,
+  userSection: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
-  smallText: {
-    fontSize: 13,
-    fontWeight: "500",
+  userIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
 
-  userName: {
-    fontSize: 27,
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 23,
+  },
+
+  cameraIcon: {
+    position: "absolute",
+    right: -5,
+    bottom: -3,
+    width: 21,
+    height: 21,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  name: {
+    marginStart: 20,
+    fontSize: 20,
     fontWeight: "800",
-    marginTop: 2,
   },
 
-  profileIcon: {
-    width: 45,
-    height: 45,
-    borderRadius: 15,
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
   },
 
-  /* BANNER */
-  banner: {
-    height: 180,
+  flowCard: {
     borderRadius: 22,
-    flexDirection: "row",
-    overflow: "hidden",
-    elevation: 4,
-    shadowOpacity: 0.12,
-    shadowRadius: 7,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-  },
-
-  bannerText: {
-    flex: 1,
-    paddingLeft: 19,
-    paddingRight: 5,
-    justifyContent: "center",
-  },
-
-  bannerSmall: {
-    fontSize: 9,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    color: "#FFFFFF",
-    opacity: 0.75,
-    marginBottom: 7,
-  },
-
-  bannerTitle: {
-    fontSize: 23,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    lineHeight: 29,
-  },
-
-  bannerSubtitle: {
-    fontSize: 11,
-    color: "#FFFFFF",
-    opacity: 0.85,
-    lineHeight: 16,
-    marginTop: 9,
-  },
-
-  bannerImageContainer: {
-    width: "41%",
-    height: "100%",
-  },
-
-  bannerImage: {
-    width: "100%",
-    height: "100%",
-  },
-
-  /* SECTION */
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginTop: 27,
-    marginBottom: 12,
-  },
-
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: "800",
-  },
-
-  sectionSubTitle: {
-    fontSize: 11,
-    marginTop: 3,
-  },
-
-  viewAll: {
-    fontSize: 12,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-
-  /* STAT CARDS */
-  statsRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-
-  statCard: {
-    flex: 1,
-    borderRadius: 19,
-    padding: 16,
-    minHeight: 155,
+    padding: 17,
+    borderWidth: 1,
     elevation: 3,
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.07,
     shadowRadius: 6,
     shadowOffset: {
       width: 0,
@@ -816,96 +911,121 @@ const styles = StyleSheet.create({
     },
   },
 
-  statTop: {
+  flowHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
 
-  statIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: "center",
+  flowTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  flowSubtitle: {
+    fontSize: 10,
+    marginTop: 3,
+  },
+
+  orderCountBox: {
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 12,
     alignItems: "center",
   },
 
-  statNumber: {
-    fontSize: 30,
+  orderCount: {
+    fontSize: 20,
     fontWeight: "800",
-    color: "#FFFFFF",
-    marginTop: 14,
   },
 
-  statTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#FFFFFF",
+  orderCountText: {
+    fontSize: 8,
     marginTop: 1,
   },
 
-  statHint: {
-    fontSize: 10,
-    color: "#FFFFFF",
-    opacity: 0.7,
-    marginTop: 4,
-  },
-
-  /* QUICK ACTIONS */
-  actionRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
-  },
-
-  actionCard: {
-    flex: 1,
-    borderRadius: 18,
-    padding: 15,
-    minHeight: 145,
-    borderWidth: 1,
-    elevation: 2,
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-  },
-
-  actionTop: {
+  flow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    marginTop: 24,
+    position: "relative",
   },
 
-  actionIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+  flowLine: {
+    position: "absolute",
+    height: 2,
+    left: 20,
+    right: 20,
+    top: 17,
+  },
+
+  flowItem: {
+    alignItems: "center",
+    width: "25%",
+  },
+
+  flowCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 2,
   },
 
-  actionTitle: {
-    fontSize: 15,
+  flowText: {
+    fontSize: 8,
+    fontWeight: "600",
+    marginTop: 7,
+    textAlign: "center",
+  },
+
+  viewOrdersButton: {
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 7,
+  },
+
+  viewOrdersText: {
+    fontSize: 11,
     fontWeight: "700",
   },
 
-  actionSubText: {
-    fontSize: 11,
-    marginTop: 5,
-    lineHeight: 16,
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 25,
+    marginBottom: 12,
   },
 
-  /* ORDERS */
-  orderCard: {
-    borderRadius: 17,
-    padding: 13,
-    marginBottom: 10,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  sectionSubtitle: {
+    fontSize: 10,
+    marginTop: 3,
+  },
+
+  actionGrid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  actionCard: {
+    width: "31.5%",
+    minHeight: 125,
+    borderRadius: 17,
+    padding: 12,
+    marginBottom: 11,
     borderWidth: 1,
     elevation: 2,
     shadowOpacity: 0.05,
@@ -916,10 +1036,45 @@ const styles = StyleSheet.create({
     },
   },
 
+  actionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 13,
+  },
+
+  actionTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  actionNumber: {
+    fontSize: 16,
+    fontWeight: "800",
+    marginTop: 4,
+  },
+
+  viewAll: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  orderCard: {
+    minHeight: 68,
+    borderRadius: 17,
+    padding: 12,
+    marginBottom: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+  },
+
   orderIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -930,50 +1085,24 @@ const styles = StyleSheet.create({
   },
 
   orderName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
   },
 
   orderDetail: {
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 4,
   },
 
-  statusBox: {
-    flexDirection: "row",
-    alignItems: "center",
+  urgentBadge: {
     paddingHorizontal: 9,
-    paddingVertical: 7,
+    paddingVertical: 6,
     borderRadius: 9,
+    marginRight: 8,
   },
 
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 5,
-  },
-
-  statusText: {
-    fontSize: 10,
+  urgentText: {
+    fontSize: 9,
     fontWeight: "700",
   },
-
-  /* LOGOUT */
-  logoutButton: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 15,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 17,
-    marginBottom: 10,
-  },
-
-  logoutText: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-});
+});                     

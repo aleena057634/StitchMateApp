@@ -4,12 +4,16 @@ import ThemeContextProvider from "../context/ThemeContexProvider";
 import ThemeContext from "../context/ThemeContext";
 import { useContext, useEffect } from "react";
 import { payment_table } from "../../databse/payment";
-
+import {ProfileImage} from "../../databse/ImageCrud"
+import {Order_Image }from "../../databse/ImageCrud"
+import * as NavigationBar from "expo-navigation-bar";
 function StackLayout() {
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     payment_table();
+    ProfileImage();
+     Order_Image();
   }, []);
 
   return (

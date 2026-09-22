@@ -11,13 +11,15 @@ import {
   View,
   ToastAndroid,
 } from "react-native";
-
+import { Image } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import DateModel from "@/componenets/DateModel";
 import { getCustomers } from "../../databse/CustomerCru";
 import { getMeasurements } from "../../databse/MeasuremenrCruc";
 import { addOrder } from "../../databse/order";
 import ThemeContext from "@/context/ThemeContext";
-import { ConfirmAlert } from "@/componenets/CustomAlert";
+import CustomAlert, { ConfirmAlert,ProfileImageModal } from "@/componenets/CustomAlert";
+import {addOrderImage} from "../../databse/ImageCrud"
 
 export default function OrderScreen() {
   const { theme, isDark, toggleTheme } = useContext(ThemeContext);
@@ -25,6 +27,7 @@ export default function OrderScreen() {
   const [orderName, setOrderName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [loader, setLoader] = useState(false);
+  const [orderImages, setOrderImages] = useState<string[]>([]);
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -55,6 +58,46 @@ export default function OrderScreen() {
   const [alertAdvance, setAlertAdvance] = useState(false);
   const [alertTotalAmount, setAlertTotalAmount] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
+  const [orderImage,setOrderimage]=useState<string>("");
+  const [ImageAlert,setImageAlert]=useState(false);
+  const [deleteImage,setdeleteImage]=useState(false);
+
+  const pickImage = async () => {
+     const result = await ImagePicker.launchImageLibraryAsync({
+       mediaTypes: ["images"],
+       allowsEditing: true,
+       aspect: [1, 1],
+       quality: 1,
+     });
+ 
+     if (!result.canceled) {
+       const imageUri = result.assets[0].uri;
+            setOrderimage(imageUri);
+            setImageAlert(false); 
+     }
+   };
+ 
+   const takePhoto = async () => {
+     const permission = await ImagePicker.requestCameraPermissionsAsync();
+ 
+     if (!permission.granted) {
+       return;
+     }
+ 
+     const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+       aspect: [1, 1],
+       quality: 1,
+     });
+ 
+     if (!result.canceled) {
+       const imageUri = result.assets[0].uri;
+       setOrderimage(imageUri);
+          setImageAlert(false);  
+      //  await saveProfileImage(imageUri);
+     }
+   };
+ 
 
   const statuses = [
     "Pending",
@@ -110,88 +153,95 @@ export default function OrderScreen() {
 
     loadMeasurements(Number(customer.ID));
   }
-
-  async function handleCreateOrder() {
-    if (!selectedCustomer) {
-      setCustomerAlert(true);
-      return;
-    }
-
-    if (!selectedMeasurement) {
-      setMeasurementAlert(true);
-      return;
-    }
-
-    if (!quantity || Number(quantity) <= 0) {
-      setAlertQuantity(true);
-      return;
-    }
-
-    if (!selectedStatus) {
-      setAlertStatus(true);
-      return;
-    }
-
-    if (!selectedPriority) {
-      setAlertPriority(true);
-      return;
-    }
-
-    if (!totalPayment || Number(totalPayment) < 0) {
-      setAlertTotalAmount(true);
-      return;
-    }
-
-    if (Number(advancePayment) > Number(totalPayment)) {
-      setAlertAdvance(true);
-      return;
-    }
-
-    try {
-      setLoader(true);
-
-      await addOrder(
-        orderName,
-        Number(quantity),
-        selectedStatus,
-        selectedPriority,
-        arrivalDate.toISOString().split("T")[0],
-        departureDate.toISOString().split("T")[0],
-        Number(totalPayment),
-        Number(advancePayment) || 0,
-        remainingPayment,
-        Number(selectedCustomer.ID),
-        Number(selectedMeasurement.mEASUREMENT_ID),
-        notes
-      );
-
-      ToastAndroid.show(
-        "Order added successfully",
-        ToastAndroid.SHORT
-      );
-
-      setLoader(false);
-
-      router.replace("/OrderList");
-
-      setOrderName("");
-      setQuantity("");
-      setSelectedCustomer(null);
-      setSelectedMeasurement(null);
-      setMeasurements([]);
-      setSelectedStatus("");
-      setSelectedPriority("");
-      setTotalPayment("");
-      setAdvancePayment("");
-      setNotes("");
-    } catch (error) {
-      setLoader(false);
-
-      console.log("Failed to create order:", error);
-
-      setErrorAlert(true);
-    }
+async function handleCreateOrder() {
+  if (!selectedCustomer) {
+    setCustomerAlert(true);
+    return;
   }
+
+  if (!selectedMeasurement) {
+    setMeasurementAlert(true);
+    return;
+  }
+
+  if (!quantity || Number(quantity) <= 0) {
+    setAlertQuantity(true);
+    return;
+  }
+
+  if (!selectedStatus) {
+    setAlertStatus(true);
+    return;
+  }
+
+  if (!selectedPriority) {
+    setAlertPriority(true);
+    return;
+  }
+
+  if (!totalPayment || Number(totalPayment) < 0) {
+    setAlertTotalAmount(true);
+    return;
+  }
+
+  if (Number(advancePayment) > Number(totalPayment)) {
+    setAlertAdvance(true);
+    return;
+  }
+
+  try {
+    setLoader(true);
+
+    const result = await addOrder(
+      orderName,
+      Number(quantity),
+      selectedStatus,
+      selectedPriority,
+      arrivalDate.toISOString().split("T")[0],
+      departureDate.toISOString().split("T")[0],
+      Number(totalPayment),
+      Number(advancePayment) || 0,
+      remainingPayment,
+      Number(selectedCustomer.ID),
+      Number(selectedMeasurement.mEASUREMENT_ID),
+      notes
+    );
+
+    const orderId = result.lastInsertRowId;
+
+    if (orderImage) {
+      await addOrderImage(orderImage, orderId);
+    }
+
+    ToastAndroid.show(
+      "Order added successfully",
+      ToastAndroid.SHORT
+    );
+
+    setLoader(false);
+
+    router.replace("/OrderList");
+
+    setOrderName("");
+    setQuantity("");
+    setSelectedCustomer(null);
+    setSelectedMeasurement(null);
+    setMeasurements([]);
+    setSelectedStatus("");
+    setSelectedPriority("");
+    setTotalPayment("");
+    setAdvancePayment("");
+    setNotes("");
+    setOrderimage("");
+
+  } catch (error) {
+    setLoader(false);
+
+    console.log("Failed to create order:", error);
+
+    setErrorAlert(true);
+  }
+}
 
   return (
     <ScrollView
@@ -791,6 +841,9 @@ export default function OrderScreen() {
           </View>
         )}
       </View>
+      <View>
+        <></>
+      </View>
 
       {/* PAYMENT */}
       <View
@@ -935,6 +988,73 @@ export default function OrderScreen() {
           onChangeText={setNotes}
         />
       </View>
+   <View style={styles.imageSection}>
+  <Text
+    style={[
+      styles.sectionTitle,
+      { color: theme.text },
+    ]}
+  >
+    Add Design
+  </Text>
+
+  {!orderImage && (
+    <Pressable
+      style={[
+        styles.addImageButton,
+        {
+          backgroundColor: theme.inputBackground,
+          borderColor: theme.border,
+        },
+      ]}
+      onPress={() => setImageAlert(true)}
+    >
+      <Ionicons
+        name="image-outline"
+        size={28}
+        color={theme.primary}
+      />
+
+      <Text
+        style={[
+          styles.addImageText,
+          { color: theme.text },
+        ]}
+      >
+        Add Design Image
+      </Text>
+
+      <Ionicons
+        name="add-circle-outline"
+        size={24}
+        color={theme.primary}
+      />
+    </Pressable>
+  )}
+
+  {orderImage && (
+    <View style={styles.imagePreviewBox}>
+      <Image
+        source={{ uri: orderImage }}
+        style={styles.orderImage}
+      />
+
+      <Pressable
+        style={styles.deleteImageButton}
+        onPress={() => {
+          
+         setdeleteImage(true);
+        }}
+      >
+        <Ionicons
+          name="trash-outline"
+          size={20}
+          color="white"
+        />
+      </Pressable>
+    </View>
+  )}
+</View>
 
       {/* CREATE ORDER */}
       {loader ? (
@@ -948,7 +1068,9 @@ export default function OrderScreen() {
             styles.button,
             { backgroundColor: theme.primary },
           ]}
-          onPress={handleCreateOrder}
+          onPress={
+            handleCreateOrder           
+          }
         >
           <Text
             style={[
@@ -965,9 +1087,24 @@ export default function OrderScreen() {
             color={theme.white}
           />
         </Pressable>
+        
       )}
 
       {/* ALERTS */}
+<CustomAlert
+visible={deleteImage}
+onConfirm={()=>{
+  setOrderimage("")
+  setdeleteImage(false);
+}}
+onCancel={()=>{
+  setdeleteImage(false)
+}}
+title="Delete Image Order"
+Message="Are You sure you want to delete Order image?"
+
+/>
+
 
       <ConfirmAlert
         visible={customerAlert}
@@ -1040,6 +1177,15 @@ export default function OrderScreen() {
           setErrorAlert(false);
         }}
       />
+
+      {/* OrderImage */}
+      <ProfileImageModal
+      visible={ImageAlert}
+      onCamera={takePhoto}
+      onGallery={pickImage}
+      onClose={()=>{setImageAlert(false)}}
+
+      />
     </ScrollView>
   );
 }
@@ -1048,7 +1194,74 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  imageSection: {
+  marginBottom: 14,
+},
 
+addImageButton: {
+  minHeight: 60,
+  borderWidth: 1,
+  borderRadius: 12,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 15,
+  gap: 12,
+},
+
+addImageText: {
+  flex: 1,
+  fontSize: 14.5,
+  fontWeight: "600",
+},
+
+imagePreviewBox: {
+  marginTop: 12,
+  borderRadius: 12,
+  overflow: "hidden",
+  position: "relative",
+},
+
+orderImage: {
+  width: "100%",
+  height: 200,
+  borderRadius: 12,
+},
+
+deleteImageButton: {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "red",
+},
+// imagePreviewBox: {
+//   marginTop: 12,
+//   borderRadius: 12,
+//   overflow: "hidden",
+//   position: "relative",
+// },
+
+// orderImage: {
+//   width: "100%",
+//   height: 200,
+//   borderRadius: 12,
+// },
+
+// deleteImageButton: {
+//   position: "absolute",
+//   top: 10,
+//   right: 10,
+//   width: 38,
+//   height: 38,
+//   borderRadius: 19,
+//   justifyContent: "center",
+//   alignItems: "center",
+//   backgroundColor: "red",
+// },
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
