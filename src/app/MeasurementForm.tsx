@@ -1,3 +1,4 @@
+
 import { router, useLocalSearchParams } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import {
@@ -49,8 +50,8 @@ export default function MeasurementForm() {
     Chest: "",
     Waist: "",
     Qameez_Length: "",
-    Shirt_Length: "",
     Shalwar_Length: "",
+    Shirt_Length: "",
     Trouser_Length: "",
     Sleeve: "",
     Daman: "",
@@ -65,27 +66,58 @@ export default function MeasurementForm() {
 
   const [showAlert, setShowAlert] = useState(false);
 
-useEffect(() => {
-  if (measurementId) {
-    setMeasurement({
-      Chest: Chest?.toString() || "",
-      Waist: Waist?.toString() || "",
-      Qameez_Length: Qameez_Length?.toString() || "",
-      Shirt_Length: Shirt_Length?.toString() || "",
-      Shalwar_Length: Shalwar_Length?.toString() || "",
-      Trouser_Length: Trouser_Length?.toString() || "",
-      Sleeve: Sleeve?.toString() || "",
-      Daman: Daman?.toString() || "",
-      Hip: Hip?.toString() || "",
-      Thigh: Thigh?.toString() || "",
-      Bottom: Bottom?.toString() || "",
-      Shoulder: Shoulder?.toString() || "",
-      Collar: Collar?.toString() || "",
-      Length: Length?.toString() || "",
-      Notes: Notes?.toString() || "",
-    });
+  useEffect(() => {
+    if (measurementId) {
+      setMeasurement({
+        Chest: Chest?.toString() || "",
+        Waist: Waist?.toString() || "",
+        Qameez_Length: Qameez_Length?.toString() || "",
+        Shalwar_Length: Shalwar_Length?.toString() || "",
+        Shirt_Length: Shirt_Length?.toString() || "",
+        Trouser_Length: Trouser_Length?.toString() || "",
+        Sleeve: Sleeve?.toString() || "",
+        Daman: Daman?.toString() || "",
+        Hip: Hip?.toString() || "",
+        Thigh: Thigh?.toString() || "",
+        Bottom: Bottom?.toString() || "",
+        Shoulder: Shoulder?.toString() || "",
+        Collar: Collar?.toString() || "",
+        Length: Length?.toString() || "",
+        Notes: Notes?.toString() || "",
+      });
+    }
+  }, [measurementId]);
+
+  function Input(
+    placeholder: string,
+    field: keyof typeof measurement
+  ) {
+    return (
+      <TextInput
+        placeholder={placeholder}
+        inputMode={field === "Notes" ? "text" : "numeric"}
+        placeholderTextColor={theme.placeholder}
+        style={[
+          styles.input,
+          field === "Notes" && styles.notes,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+            color: theme.text,
+          },
+        ]}
+        value={measurement[field]}
+        onChangeText={(value) =>
+          setMeasurement({
+            ...measurement,
+            [field]: value,
+          })
+        }
+        multiline={field === "Notes"}
+      />
+    );
   }
-}, [measurementId]);
+
   function validateMeasurement() {
     if (type === "Male Shalwar Kameez") {
       if (
@@ -182,34 +214,6 @@ useEffect(() => {
     }
 
     router.dismiss(2);
-  }
-
-  function Input(
-    placeholder: string,
-    field: keyof typeof measurement
-  ) {
-    return (
-      <TextInput
-        placeholder={placeholder}
-        inputMode="numeric"
-        placeholderTextColor={theme.placeholder}
-        style={[
-          styles.input,
-          {
-            backgroundColor: theme.inputBackground,
-            borderColor: theme.border,
-            color: theme.text,
-          },
-        ]}
-        value={measurement[field]}
-        onChangeText={(value) =>
-          setMeasurement({
-            ...measurement,
-            [field]: value,
-          })
-        }
-      />
-    );
   }
 
   return (

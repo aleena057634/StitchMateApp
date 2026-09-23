@@ -1,6 +1,6 @@
 
-import { ConfirmAlert } from "@/componenets/CustomAlert";
 import CustomButton from "@/constents/CustomButton";
+import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -77,9 +77,9 @@ export default function AddCustomers() {
       setPhoneError("Phone can't be empty");
       return false;
     }
-    const phonePattern = /^(03\d{9}|\+92\d{10})$/;
+     const phonePattern = /^(03\d{9}|\+923\d{9})$/;
     if (!phonePattern.test(CPhone)) {
-      setPhoneError("Enter a valid phone number e.g.+9234748884, 03001234567and ");
+      setPhoneError("Enter a valid phone number e.g. 03001234567");
       return false;
     }
 
