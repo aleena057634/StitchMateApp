@@ -85,12 +85,20 @@ export default function Dashboard() {
       console.log("Failed to load urgent orders:", error);
     }
   };
+  
+   const loadCustomers = async () => {
+      const count = await getTotalCustomers();
+      setTotalCustomers(count);
+    };
+  
 
   useFocusEffect(
     useCallback(() => {
       UrgentOrder();
+      loadCustomers();
     }, [])
   );
+  
 
   useEffect(() => {
     Measurement_table();
@@ -105,29 +113,12 @@ export default function Dashboard() {
       const count = await getTotalCustomers();
       setTotalCustomers(count);
     };
-
+  
     const loadOrders = async () => {
       const count = await TotalOrders();
       setTotalOrder(count);
 
-      if (count === 0) {
-        setAnimatedOrder(0);
-        return;
-      }
-
-      let current = 0;
-
-      const interval = setInterval(() => {
-        current++;
-        setAnimatedOrder(current);
-
-        if (current >= count) {
-          clearInterval(interval);
-        }
-      }, 100);
-
-      return () => clearInterval(interval);
-    };
+         };
 
     const LoadProfileImage = async () => {
       const image = await getProfileImage();

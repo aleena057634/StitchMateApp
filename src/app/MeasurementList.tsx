@@ -60,7 +60,7 @@ const [editItem, setEditItem] = useState<any>(null);
 const confirmUpdate = () => {
   if (editItem) {
     router.push({
-      pathname: "/AddMeasurement",
+      pathname: "/MeasurementForm",
       params: {
         id: String(id),
         type: String(editItem.TYPE),
@@ -85,23 +85,41 @@ const confirmUpdate = () => {
             ? String(editItem.TROUSER_LENGTH)
             : "",
         Sleeve:
-          editItem.SLEEVE != null ? String(editItem.SLEEVE) : "",
+          editItem.SLEEVE != null
+            ? String(editItem.SLEEVE)
+            : "",
         Daman:
-          editItem.DAMAN != null ? String(editItem.DAMAN) : "",
+          editItem.DAMAN != null
+            ? String(editItem.DAMAN)
+            : "",
         Hip:
-          editItem.HIP != null ? String(editItem.HIP) : "",
+          editItem.HIP != null
+            ? String(editItem.HIP)
+            : "",
         Thigh:
-          editItem.THIGH != null ? String(editItem.THIGH) : "",
+          editItem.THIGH != null
+            ? String(editItem.THIGH)
+            : "",
         Bottom:
-          editItem.BOTTOM != null ? String(editItem.BOTTOM) : "",
+          editItem.BOTTOM != null
+            ? String(editItem.BOTTOM)
+            : "",
         Shoulder:
-          editItem.SHOULDER != null ? String(editItem.SHOULDER) : "",
+          editItem.SHOULDER != null
+            ? String(editItem.SHOULDER)
+            : "",
         Collar:
-          editItem.COLLAR != null ? String(editItem.COLLAR) : "",
+          editItem.COLLAR != null
+            ? String(editItem.COLLAR)
+            : "",
         Length:
-          editItem.LENGTH != null ? String(editItem.LENGTH) : "",
+          editItem.LENGTH != null
+            ? String(editItem.LENGTH)
+            : "",
         Notes:
-          editItem.NOTES != null ? String(editItem.NOTES) : "",
+          editItem.NOTES != null
+            ? String(editItem.NOTES)
+            : "",
       },
     });
 

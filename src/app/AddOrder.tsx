@@ -65,7 +65,7 @@ export default function OrderScreen() {
   const pickImage = async () => {
      const result = await ImagePicker.launchImageLibraryAsync({
        mediaTypes: ["images"],
-       allowsEditing: true,
+      //  allowsEditing: true,
        aspect: [1, 1],
        quality: 1,
      });
@@ -85,7 +85,7 @@ export default function OrderScreen() {
      }
  
      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
+        // allowsEditing: true,
        aspect: [1, 1],
        quality: 1,
      });
@@ -102,9 +102,9 @@ export default function OrderScreen() {
   const statuses = [
     "Pending",
     "In Progress",
-    "Ready",
-    "Delivered",
-    "Cancelled",
+    // "Ready",
+    // "Delivered",
+    // "Cancelled",
   ];
 
   const priorities = [

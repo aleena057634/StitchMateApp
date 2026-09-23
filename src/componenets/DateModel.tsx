@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import ThemeContext from "@/context/ThemeContext";
 
-export default function DateModel({ date, setDate }: any) {
+export default function DateModel({date,setDate, minimumDate,}: any) {
   const { theme } = useContext(ThemeContext);
   const [openCalendar, setOpenCalendar] = useState(false);
 
@@ -52,6 +52,7 @@ export default function DateModel({ date, setDate }: any) {
           value={date}
           mode="date"
           display="calendar"
+          minimumDate={minimumDate}
           onChange={(event, selectedDate) => {
             setOpenCalendar(false);
 

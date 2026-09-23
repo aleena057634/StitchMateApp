@@ -146,7 +146,7 @@ export default function CustomerList() {
       />
 
       {/* Confirmation Alert */}
-      <ConfirmAlert
+      {/* <ConfirmAlert
         visible={showAlert}
         title="Delete Customer"
         message="Are you sure you want to delete this customer?"
@@ -155,7 +155,7 @@ export default function CustomerList() {
           setSelectedId(null);
         }}
         onConfirm={confirmDelete}
-      />
+      /> */}
 
     </SafeAreaView>
   );

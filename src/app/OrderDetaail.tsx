@@ -9,12 +9,17 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,Image,
-  Touchable,
-  TouchableOpacity
+  View,
+  Image,
+  TouchableOpacity,
 } from "react-native";
 
-import { getOrderImage,deleteOrderImage ,Update_OrderImage} from "../../databse/ImageCrud"
+import {
+  getOrderImage,
+  deleteOrderImage,
+  Update_OrderImage,
+} from "../../databse/ImageCrud";
+
 import {
   Mark,
   Order_detail,
@@ -22,9 +27,15 @@ import {
   updateOrderStatus,
 } from "../../databse/order";
 
-import CustomAlert, { ConfirmAlert, ProfileImageModal } from "../componenets/CustomAlert";
+import CustomAlert, {
+  ConfirmAlert,
+  ProfileImageModal,
+} from "../componenets/CustomAlert";
+
 import ThemeContext from "../context/ThemeContext";
+
 import * as ImagePicker from "expo-image-picker";
+
 export default function OrderDetail() {
   const { orderId } = useLocalSearchParams();
 
@@ -37,46 +48,87 @@ export default function OrderDetail() {
   const [ShowAlert, setShowAlert] = useState(false);
   const [PartialAlert, setPartialAlert] = useState(false);
   const [InvalidAmountAlert, setInvalidAmountAlert] = useState(false);
+
   const [markPaidlId, setMarkPaidId] = useState<number | null>(null);
+
   const [markAlert, setMarkAlert] = useState(false);
   const [MarkPaidAlert, setMarkPaidAlert] = useState(false);
+
   const [partialConfirmAlert, setPartialConfirmAlert] =
     useState(false);
+
   const [paymentAmount, setPaymentAmount] = useState(0);
 
   const [orderImage, setOrderImage] = useState<string | null>(null);
-  const[deleteAlert,setDeleteAlert]=useState(false);
-const [updateAlert, setUpdateAlert]=useState(false);
-const [ImageAlert, setImageAlert] = useState(false);
-const takePhotoForUpdate = async () => {
-  const permission = await ImagePicker.requestCameraPermissionsAsync();
 
-  if (!permission.granted) {
-    return;
-  }
+  const [deleteAlert, setDeleteAlert] = useState(false);
 
-  const result = await ImagePicker.launchCameraAsync({
-    mediaTypes: ["images"],
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 1,
-  });
+  const [updateAlert, setUpdateAlert] = useState(false);
 
-  if (!result.canceled) {
-    const newImageUri = result.assets[0].uri;
+  const [ImageAlert, setImageAlert] = useState(false);
 
-    await updateOrderImage(newImageUri);
+  // Status confirmation
+  const [statusConfirmAlert, setStatusConfirmAlert] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
 
-    setImageAlert(false);
-  }
-};
+
+  const updateOrderImage = async (newImageUri: string) => {
+    try {
+      await Update_OrderImage(newImageUri, Number(orderId));
+
+      setOrderImage(newImageUri);
+    } catch (error) {
+      console.log("Failed to update order image:", error);
+    }
+  };
+
+  const takePhotoForUpdate = async () => {
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newImageUri = result.assets[0].uri;
+
+      await updateOrderImage(newImageUri);
+
+      setImageAlert(false);
+    }
+  };
+
+  const pickImageForUpdate = async () => {
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+    if (!result.canceled) {
+      const newImageUri = result.assets[0].uri;
+
+      await updateOrderImage(newImageUri);
+
+      setImageAlert(false);
+    }
+  };
+
   const onPartialConfirm = async () => {
     await Partial_Payment(
       Number(orderId),
       paymentAmount
     );
-    // image get code 
-    ;
 
     setPartialAmount("");
     setPartialConfirmAlert(false);
@@ -89,7 +141,7 @@ const takePhotoForUpdate = async () => {
     await loadOrderDetail();
     router.replace("/Payment");
   };
-  // orderImage
+
   const OrderImage = async () => {
     const imageUri = await getOrderImage(Number(orderId));
 
@@ -98,22 +150,11 @@ const takePhotoForUpdate = async () => {
     }
   };
 
-  const pickImageForUpdate = async () => {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images"],
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 1,
-  });
+  const delete_image = async () => {
+    await deleteOrderImage(Number(orderId));
+    setOrderImage(null);
+  };
 
-  if (!result.canceled) {
-    const newImageUri = result.assets[0].uri;
-
-    await updateOrderImage(newImageUri);
-
-    setImageAlert(false);
-  }
-};
   async function loadOrderDetail() {
     try {
       setLoading(true);
@@ -122,45 +163,52 @@ const takePhotoForUpdate = async () => {
 
       setOrder(data);
     } catch (error) {
-      console.log("Failed to load order detail:", error);
+      console.log(
+        "Failed to load order detail:",
+        error
+      );
     } finally {
       setLoading(false);
     }
   }
-  const delete_image= async()=>{
-    await deleteOrderImage(Number(orderId));
-    setOrderImage("");
-  }
-
- const updateOrderImage = async (newImageUri: string) => {
- await Update_OrderImage(newImageUri, Number(orderId));
-  setOrderImage(newImageUri);
-};
 
   useEffect(() => {
     loadOrderDetail();
     OrderImage();
   }, [orderId]);
 
-  const handleStatusChange = async (status: string) => {
+  // Status button press
+  const handleStatusChange = (status: string) => {
+    
     if (order.ORDER_STAUS === status) {
       return;
     }
 
+    setSelectedStatus(status);
+    setStatusConfirmAlert(true);
+  };
+
+  // Status confirmation ke baad update
+  const confirmStatusChange = async () => {
     try {
       const updated = await updateOrderStatus(
         Number(orderId),
-        status
+        selectedStatus
       );
 
       if (updated) {
         setOrder({
           ...order,
-          ORDER_STAUS: status,
+          ORDER_STAUS: selectedStatus,
         });
+
+        setStatusConfirmAlert(false);
       }
     } catch (error) {
-      console.log("Failed to update status:", error);
+      console.log(
+        "Failed to update status:",
+        error
+      );
     }
   };
 
@@ -215,7 +263,6 @@ const takePhotoForUpdate = async () => {
             Order Details
           </Text>
 
-{/* ============================= */}
           <Text style={styles.subtitle}>
             Order #{order.ORDER_ID}
           </Text>
@@ -300,21 +347,28 @@ const takePhotoForUpdate = async () => {
             "Ready",
             "Delivered",
           ].map((status) => {
-            const isActive = order.ORDER_STAUS === status;
+            const isActive =
+              order.ORDER_STAUS === status;
 
             return (
               <Pressable
                 key={status}
+               
                 style={[
                   styles.statusButton,
-                  isActive && styles.activeStatusButton,
+                  isActive &&
+                    styles.activeStatusButton,
+                  
                 ]}
-                onPress={() => handleStatusChange(status)}
+                onPress={() =>
+                  handleStatusChange(status)
+                }
               >
                 <Text
                   style={[
                     styles.statusButtonText,
-                    isActive && styles.activeStatusButtonText,
+                    isActive &&
+                      styles.activeStatusButtonText,
                   ]}
                 >
                   {status}
@@ -372,7 +426,9 @@ const takePhotoForUpdate = async () => {
           <Pressable
             style={styles.paidButton}
             onPress={() => {
-              if (Number(order.ORDER_REMAINING) <= 0) {
+              if (
+                Number(order.ORDER_REMAINING) <= 0
+              ) {
                 setShowAlert(true);
                 return;
               }
@@ -408,7 +464,8 @@ const takePhotoForUpdate = async () => {
             <Pressable
               style={styles.partialButton}
               onPress={() => {
-                const amount = Number(partialAmount);
+                const amount =
+                  Number(partialAmount);
 
                 if (amount <= 0) {
                   setInvalidAmountAlert(true);
@@ -569,8 +626,6 @@ const takePhotoForUpdate = async () => {
         </View>
       </View>
 
-      
-
       {order.NOTES ? (
         <>
           <Text style={styles.sectionTitle}>
@@ -590,67 +645,95 @@ const takePhotoForUpdate = async () => {
           </View>
         </>
       ) : null}
-  {orderImage && (
-  <View style={styles.imageContainer}>
-    <Image
-      source={{ uri: orderImage }}
-      style={styles.orderImage}
-    />
 
-    <View style={styles.imageActions}>
-      <TouchableOpacity
-        style={styles.imageActionButton}
-        onPress={() => {
-          setDeleteAlert(true);
-        }}
-      >
-        <Ionicons
-          name="trash-outline"
-          size={20}
-          color={theme.white}
-        />
-      </TouchableOpacity>
+      {orderImage && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: orderImage }}
+            style={styles.orderImage}
+          />
 
-      <TouchableOpacity
-        style={styles.imageActionButton}
-        onPress={() => {
-          setUpdateAlert(true);
+          <View style={styles.imageActions}>
+            <TouchableOpacity
+              style={styles.imageActionButton}
+              onPress={() => {
+                setDeleteAlert(true);
+              }}
+            >
+              <Ionicons
+                name="trash-outline"
+                size={20}
+                color={theme.white}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.imageActionButton}
+              onPress={() => {
+                setUpdateAlert(true);
+              }}
+            >
+              <Ionicons
+                name="pencil-outline"
+                size={20}
+                color={theme.white}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Delete Image Alert */}
+
+      <CustomAlert
+        visible={deleteAlert}
+        title="Delete Order Design"
+        Message="Are you sure you want to Delete design?"
+        onCancel={() => {
+          setDeleteAlert(false);
         }}
-      >
-        <Ionicons
-          name="pencil-outline"
-          size={20}
-          color={theme.white}
-        />
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
-<CustomAlert
-  visible={deleteAlert}
-  title="Delete Order Design"
-  Message="Are you sure you want to Delete design?"
-  onCancel={() => {
-    setDeleteAlert(false);
-  }}
-  onConfirm={async () => {
-    await delete_image();
-    setDeleteAlert(false);
-  }}
-/>
-<CustomAlert
-visible={updateAlert}
-title="Update design"
-Message="Are you sure you want to Update design?"
-onCancel={()=>{setUpdateAlert(false)}}
-onConfirm={()=>{updateOrderImage}}
-/>
-<ProfileImageModal
-  visible={ImageAlert}
-  onClose={() => setImageAlert(false)}
-  onCamera={takePhotoForUpdate}
-  onGallery={pickImageForUpdate}
-/>
+        onConfirm={async () => {
+          await delete_image();
+          setDeleteAlert(false);
+        }}
+      />
+
+      {/* Update Image Confirmation */}
+
+      <CustomAlert
+        visible={updateAlert}
+        title="Update Design"
+        Message="Are you sure you want to update the design?"
+        onCancel={() => {
+          setUpdateAlert(false);
+        }}
+        onConfirm={() => {
+          setUpdateAlert(false);
+          setImageAlert(true);
+        }}
+      />
+
+      {/* Camera / Gallery */}
+
+      <ProfileImageModal
+        visible={ImageAlert}
+        onClose={() => setImageAlert(false)}
+        onCamera={takePhotoForUpdate}
+        onGallery={pickImageForUpdate}
+      />
+
+      {/* Status Confirmation */}
+
+      <CustomAlert
+        visible={statusConfirmAlert}
+        title="Update Status"
+        Message={`Are you sure you want to update status to "${selectedStatus}"?`}
+        onCancel={() => {
+          setStatusConfirmAlert(false);
+          setSelectedStatus("");
+        }}
+        onConfirm={confirmStatusChange}
+      />
 
       <ConfirmAlert
         visible={ShowAlert}
@@ -709,42 +792,44 @@ const createStyles = (theme: any) =>
     container: {
       flex: 1,
       backgroundColor: theme.background,
-      marginBottom: 30
+      marginBottom: 30,
     },
 
     content: {
       padding: 16,
       paddingBottom: 35,
     },
-imageContainer: {
-  position: "relative",
-  marginTop: 10,
-  borderRadius: 12,
-  overflow: "hidden",
-},
 
-orderImage: {
-  width: "100%",
-  height: 200,
-  borderRadius: 12,
-},
+    imageContainer: {
+      position: "relative",
+      marginTop: 10,
+      borderRadius: 12,
+      overflow: "hidden",
+    },
 
-imageActions: {
-  position: "absolute",
-  top: 10,
-  right: 10,
-  flexDirection: "row",
-  gap: 8,
-},
+    orderImage: {
+      width: "100%",
+      height: 200,
+      borderRadius: 12,
+    },
 
-imageActionButton: {
-  width: 38,
-  height: 38,
-  borderRadius: 19,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: "rgba(0,0,0,0.6)",
-},
+    imageActions: {
+      position: "absolute",
+      top: 10,
+      right: 10,
+      flexDirection: "row",
+      gap: 8,
+    },
+
+    imageActionButton: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.6)",
+    },
+
     header: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -936,6 +1021,10 @@ imageActionButton: {
       borderColor: theme.primary,
     },
 
+    disabledStatusButton: {
+      opacity: 0.5,
+    },
+
     statusButtonText: {
       fontSize: 12,
       fontWeight: "600",
@@ -987,11 +1076,6 @@ imageActionButton: {
     paymentActions: {
       marginTop: 18,
     },
-//     orderImage: {
-//   width: "100%",
-//   height: 200,
-//   borderRadius: 12,
-// },
 
     actionTitle: {
       fontSize: 14,

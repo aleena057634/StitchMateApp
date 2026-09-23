@@ -13,8 +13,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-
 import { Ionicons } from "@expo/vector-icons";
+
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
 import { SignInValidation } from "../../databse/queries";
@@ -27,36 +27,74 @@ export default function SignIn() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [alertEmailPattern, setAlertEmailPattern] = useState(false);
   const [alertPass, setAlertPass] = useState(false);
   const [Aalert, AshowAlert] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
 
+  const [EmailError, setEmailError] = useState("");
+  const [PassError, SetPassError] = useState("");
+
+  function validateEmail(value: string) {
+    const Email = value.trim();
+
+    if (!Email) {
+      setEmailError("Email can't be empty");
+      return false;
+    }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+
+    if (!emailPattern.test(Email)) {
+      setEmailError("Invalid email");
+      return false;
+    }
+
+    setEmailError("");
+    return true;
+  }
+
+  function validatePassword(value: string) {
+    const Password = value.trim();
+
+    if (!Password) {
+      SetPassError("Password can't be empty");
+      return false;
+    }
+
+    const passwordPattern =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/;
+
+    if (!passwordPattern.test(Password)) {
+      SetPassError(
+        "Password must contain 8 characters, a number and a special character"
+      );
+      return false;
+    }
+
+    SetPassError("");
+    return true;
+  }
+
   async function checkUser(email: string, pass: string) {
+    if (!email.trim() || !pass.trim()) {
+      AshowAlert(true);
+      return;
+    }
+
+    const validEmail = validateEmail(email);
+    const validPassword = validatePassword(pass);
+
+    if (!validEmail || !validPassword) {
+      return;
+    }
+
     setLoading(true);
 
     try {
       const Email = email.trim();
       const Password = pass.trim();
 
-      if (!Email || !Password) {
-        AshowAlert(true);
-        setLoading(false);
-        return;
-      }
-
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      if (!emailPattern.test(Email)) {
-        setAlertEmailPattern(true);
-        setLoading(false);
-        return;
-      }
-
-      const user = await SignInValidation(
-        Email,
-        Password
-      );
+      const user = await SignInValidation(Email, Password);
 
       if (!user) {
         setAlertPass(true);
@@ -70,11 +108,9 @@ export default function SignIn() {
       );
 
       router.replace("/Dashbord");
-
       setLoading(false);
     } catch (error) {
       console.log("SIGN IN ERROR:", error);
-
       setLoading(false);
       setErrorAlert(true);
     }
@@ -102,8 +138,7 @@ export default function SignIn() {
               style={[
                 styles.logoCircle,
                 {
-                  backgroundColor:
-                    theme.inputBackground,
+                  backgroundColor: theme.inputBackground,
                 },
               ]}
             >
@@ -126,6 +161,7 @@ export default function SignIn() {
           {/* Form */}
           <View style={styles.form}>
 
+            {/* Email */}
             <Text style={styles.label}>
               Email
             </Text>
@@ -142,12 +178,21 @@ export default function SignIn() {
                 placeholder="Enter your email"
                 placeholderTextColor={theme.placeholder}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  validateEmail(value);
+                }}
                 keyboardType="email-address"
-                autoCapitalize="none"
               />
             </View>
 
+            {EmailError ? (
+              <Text style={styles.errorText}>
+                {EmailError}
+              </Text>
+            ) : null}
+
+            {/* Password */}
             <Text style={styles.label}>
               Password
             </Text>
@@ -164,14 +209,15 @@ export default function SignIn() {
                 placeholder="Enter your password"
                 placeholderTextColor={theme.placeholder}
                 value={pass}
-                onChangeText={setPass}
+                onChangeText={(value) => {
+                  setPass(value);
+                  validatePassword(value);
+                }}
                 secureTextEntry={!showPass}
               />
 
               <Pressable
-                onPress={() =>
-                  setShowPass(!showPass)
-                }
+                onPress={() => setShowPass(!showPass)}
               >
                 <Ionicons
                   name={
@@ -185,6 +231,13 @@ export default function SignIn() {
               </Pressable>
             </View>
 
+            {PassError ? (
+              <Text style={styles.errorText}>
+                {PassError}
+              </Text>
+            ) : null}
+
+            {/* Button */}
             {loading ? (
               <View style={styles.loader}>
                 <ActivityIndicator
@@ -209,7 +262,6 @@ export default function SignIn() {
           {/* Sign Up */}
           <Text style={styles.signup}>
             Don't have an account?{" "}
-
             <Text
               style={styles.signupLink}
               onPress={() =>
@@ -220,25 +272,17 @@ export default function SignIn() {
             </Text>
           </Text>
 
-          {/* Alerts */}
+          {/* All Fields Alert */}
           <ConfirmAlert
             visible={Aalert}
             title="Error"
-            Message="Email and Password are required"
+            Message="All Fields are required"
             onConfirm={() => {
               AshowAlert(false);
             }}
           />
 
-          <ConfirmAlert
-            visible={alertEmailPattern}
-            title="Email Pattern"
-            Message="Please enter a valid email."
-            onConfirm={() => {
-              setAlertEmailPattern(false);
-            }}
-          />
-
+          {/* Invalid Credentials Alert */}
           <ConfirmAlert
             visible={alertPass}
             title="Error"
@@ -248,6 +292,7 @@ export default function SignIn() {
             }}
           />
 
+          {/* Unexpected Error Alert */}
           <ConfirmAlert
             visible={errorAlert}
             title="Error"
@@ -331,7 +376,7 @@ const createStyles = (theme: any) =>
       borderColor: theme.border,
       borderRadius: 16,
       paddingHorizontal: 15,
-      marginBottom: 18,
+      marginBottom: 5,
     },
 
     inputText: {
@@ -339,6 +384,13 @@ const createStyles = (theme: any) =>
       marginLeft: 13,
       fontSize: 15,
       color: theme.text,
+    },
+
+    errorText: {
+      color: "#D32F2F",
+      fontSize: 12,
+      marginLeft: 4,
+      marginBottom: 14,
     },
 
     button: {

@@ -84,6 +84,21 @@ catch(error){
 }
 }
 
+export async function dropMeasurementTable() {
+  try {
+    const db = await databaseConnection();
+
+    await db.execAsync(`
+      DROP TABLE IF EXISTS MEASUREMENTS;
+    `);
+
+    console.log("MEASUREMENTS table dropped successfully");
+  } catch (error) {
+    console.log("Failed to drop MEASUREMENTS table:", error);
+  }
+}
+
+
 export async function getCurrentUser() {
   try {
     const db = await databaseConnection();

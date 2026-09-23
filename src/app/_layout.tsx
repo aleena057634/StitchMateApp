@@ -7,6 +7,7 @@ import { payment_table } from "../../databse/payment";
 import {ProfileImage} from "../../databse/ImageCrud"
 import {Order_Image }from "../../databse/ImageCrud"
 import * as NavigationBar from "expo-navigation-bar";
+import {dropMeasurementTable} from "../../databse/table"
 function StackLayout() {
   const { theme } = useContext(ThemeContext);
 
@@ -14,6 +15,7 @@ function StackLayout() {
     payment_table();
     ProfileImage();
      Order_Image();
+dropMeasurementTable()
   }, []);
 
   return (

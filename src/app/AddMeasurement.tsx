@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,26 +7,23 @@ import {
   Text,
   View,
 } from "react-native";
+
 import ThemeContext from "../context/ThemeContext";
 
 export default function AddMeasurement() {
-
-const { id, measurementId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
 
   const { theme } = useContext(ThemeContext);
 
   function selectMeasurement(type: string) {
-  router.push({
-    pathname: "/MeasurementForm",
-    params: {
-      id: String(id),
-      type: type,
-      measurementId: measurementId
-        ? String(measurementId)
-        : "",
-    },
-  });
-}
+    router.push({
+      pathname: "/MeasurementForm",
+      params: {
+        id: String(id),
+        type: type,
+      },
+    });
+  }
 
   return (
     <View
@@ -47,7 +44,7 @@ const { id, measurementId } = useLocalSearchParams();
           </Text>
 
           <Text style={{ color: theme.secondaryText }}>
-            Customer Id:{id}
+            Customer Id: {id}
           </Text>
 
           <Text

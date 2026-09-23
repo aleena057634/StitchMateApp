@@ -1,8 +1,12 @@
 
 import { Ionicons } from "@expo/vector-icons";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { Link, router } from "expo-router";
+
 import { useContext, useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,17 +20,20 @@ import {
 } from "react-native";
 
 import ThemeContext from "@/context/ThemeContext";
+
 import {
   adduser,
   checkEmail,
   showUsers,
 } from "../../databse/queries";
+
 import { userTable } from "../../databse/table";
+
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 
 export default function SignUp() {
   const { theme } = useContext(ThemeContext);
-
+const [Alert, showAlert]=useState(false);
   const [Username, setName] = useState("");
   const [UserEmail, setEmail] = useState("");
   const [UserPas, setPas] = useState("");
@@ -35,12 +42,12 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [alertName, setAlertName] = useState(false);
   const [alertEmail, setAlertEmail] = useState(false);
-  const [alertPhone, setAlertPhone] = useState(false);
-  const [alertPass, setAlertPass] = useState(false);
-  const [alert, showAlert] = useState(false);
-  const [emailPattern, setAlertEmailPattern] = useState(false);
+
+  const [nameError, setNameErro] = useState("");
+  const [EmailError, setEmailErro] = useState("");
+  const [phoneError, setPhoneErro] = useState("");
+  const [passError, setPassErro] = useState("");
 
   useEffect(() => {
     userTable();
@@ -50,69 +57,124 @@ export default function SignUp() {
     const users = await showUsers();
   }
 
-  async function handlebutton() {
-    const email = UserEmail.trim();
-
-    if (!Username || !email || !UserPas || !UserPhone) {
-      showAlert(true);
-      return;
-    }
-
-    const existEmail = await checkEmail(email);
-
-    if (existEmail) {
-      setAlertEmail(true);
-      return;
+  function validName(name: string) {
+    if (!name.trim()) {
+      setNameErro("Name can't be empty");
+      return false;
     }
 
     const namePattern = /^[A-Za-z ]+$/;
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phonePattern = /^03\d{9}$/;
+
+    if (!namePattern.test(name.trim())) {
+      setNameErro("Name contains letters only");
+      return false;
+    }
+
+    setNameErro("");
+    return true;
+  }
+
+  function validEmail(email: string) {
+    if (!email.trim()) {
+      setEmailErro("Email can't be empty");
+      return false;
+    }
+
+   const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+
+    if (!emailPattern.test(email.trim())) {
+      setEmailErro("Invalid email");
+      return false;
+    }
+
+    setEmailErro("");
+    return true;
+  }
+
+  function validPass(pass: string) {
+    if (!pass.trim()) {
+      setPassErro("Password can't be empty");
+      return false;
+    }
 
     const passwordPattern =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/;
 
-    if (!namePattern.test(Username)) {
-      setAlertName(true);
-      return;
-    }
-
-    if (!emailPattern.test(email)) {
-      setAlertEmailPattern(true);
-      return;
-    }
-
-    if (!phonePattern.test(UserPhone)) {
-      setAlertPhone(true);
-      return;
-    }
-
-    if (!passwordPattern.test(UserPas)) {
-      setAlertPass(true);
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const newUser_id = await adduser(
-        Username,
-        email,
-        UserPas,
-        UserPhone
+    if (!passwordPattern.test(pass)) {
+      setPassErro(
+        "Password must contain 8 characters, a number and a special character"
       );
-
-      await AsyncStorage.setItem(
-        "userId",
-        String(newUser_id)
-      );
-
-      router.replace("/Dashbord");
-    } catch (error) {
-      console.log("Signup failed:", error);
-      setLoading(false);
+      return false;
     }
+
+    setPassErro("");
+    return true;
   }
+
+  function validphone(phone: string) {
+    if (!phone.trim()) {
+      setPhoneErro("Phone can't be empty");
+      return false;
+    }
+
+    const phonePattern = /^(03\d{9}|92\d{10})$/;
+
+    if (!phonePattern.test(phone.trim())) {
+      setPhoneErro(
+        "Enter a valid phone number e.g. 03001234567 or 923001234567"
+      );
+      return false;
+    }
+
+    setPhoneErro("");
+    return true;
+  }
+
+  async function handlebutton() {
+  const email = UserEmail.trim();
+
+  if (!Username.trim() || !email || !UserPas.trim() || !UserPhone.trim()) {
+    showAlert(true);
+    return;
+  }
+
+  const validname = validName(Username);
+  const validemail = validEmail(UserEmail);
+  const validPhone = validphone(UserPhone);
+  const validpass = validPass(UserPas);
+
+  if (!validname || !validemail || !validPhone || !validpass) {
+    return;
+  }
+
+  const existEmail = await checkEmail(email);
+
+  if (existEmail) {
+    setAlertEmail(true);
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const newUser_id = await adduser(
+      Username,
+      email,
+      UserPas,
+      UserPhone
+    );
+
+    await AsyncStorage.setItem(
+      "userId",
+      String(newUser_id)
+    );
+
+    router.replace("/Dashbord");
+  } catch (error) {
+    console.log("Signup failed:", error);
+    setLoading(false);
+  }
+}
 
   const styles = createStyles(theme);
 
@@ -129,16 +191,16 @@ export default function SignUp() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.container}>
-
           <View style={styles.header}>
             <View
               style={[
                 styles.logoCircle,
-                { backgroundColor: theme.inputBackground },
+                {
+                  backgroundColor:
+                    theme.inputBackground,
+                },
               ]}
-            >
-          
-            </View>
+            ></View>
 
             <Text style={styles.title}>
               Create Account
@@ -150,7 +212,6 @@ export default function SignUp() {
           </View>
 
           <View style={styles.form}>
-
             <Text style={styles.label}>
               Name
             </Text>
@@ -165,11 +226,20 @@ export default function SignUp() {
               <TextInput
                 style={styles.input}
                 value={Username}
-                onChangeText={setName}
+                onChangeText={(value) => {
+                  setName(value);
+                  validName(value);
+                }}
                 placeholder="Enter your name"
                 placeholderTextColor={theme.placeholder}
               />
             </View>
+
+            {nameError ? (
+              <Text style={styles.errorText}>
+                {nameError}
+              </Text>
+            ) : null}
 
             <Text style={styles.label}>
               Email
@@ -185,13 +255,22 @@ export default function SignUp() {
               <TextInput
                 style={styles.input}
                 value={UserEmail}
-                onChangeText={setEmail}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  validEmail(value);
+                }}
                 placeholder="Enter your email"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="email-address"
-                autoCapitalize="none"
+               
               />
             </View>
+
+            {EmailError ? (
+              <Text style={styles.errorText}>
+                {EmailError}
+              </Text>
+            ) : null}
 
             <Text style={styles.label}>
               Phone
@@ -207,12 +286,21 @@ export default function SignUp() {
               <TextInput
                 style={styles.input}
                 value={UserPhone}
-                onChangeText={setPhone}
+                onChangeText={(value) => {
+                  setPhone(value);
+                  validphone(value);
+                }}
                 placeholder="03001234567"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="phone-pad"
               />
             </View>
+
+            {phoneError ? (
+              <Text style={styles.errorText}>
+                {phoneError}
+              </Text>
+            ) : null}
 
             <Text style={styles.label}>
               Password
@@ -228,7 +316,10 @@ export default function SignUp() {
               <TextInput
                 style={styles.input}
                 value={UserPas}
-                onChangeText={setPas}
+                onChangeText={(value) => {
+                  setPas(value);
+                  validPass(value);
+                }}
                 placeholder="Enter your password"
                 placeholderTextColor={theme.placeholder}
                 secureTextEntry={!showPassword}
@@ -250,6 +341,12 @@ export default function SignUp() {
                 />
               </Pressable>
             </View>
+
+            {passError ? (
+              <Text style={styles.errorText}>
+                {passError}
+              </Text>
+            ) : null}
 
             {loading ? (
               <View style={styles.loader}>
@@ -282,42 +379,6 @@ export default function SignUp() {
           </Text>
 
           <ConfirmAlert
-            visible={alert}
-            title="Error"
-            Message="All Fields are required"
-            onConfirm={() => {
-              showAlert(false);
-            }}
-          />
-
-          <ConfirmAlert
-            visible={alertPass}
-            title="Password"
-            Message="Password must contain 8 characters, a number and a special character"
-            onConfirm={() => {
-              setAlertPass(false);
-            }}
-          />
-
-          <ConfirmAlert
-            visible={alertPhone}
-            title="Invalid Phone"
-            Message="Enter a valid phone number e.g. 03001234567"
-            onConfirm={() => {
-              setAlertPhone(false);
-            }}
-          />
-
-          <ConfirmAlert
-            visible={alertName}
-            title="Invalid Name"
-            Message="Name can contain letters only"
-            onConfirm={() => {
-              setAlertName(false);
-            }}
-          />
-
-          <ConfirmAlert
             visible={alertEmail}
             title="Email"
             Message="This email is already registered."
@@ -325,17 +386,15 @@ export default function SignUp() {
               setAlertEmail(false);
             }}
           />
-
-          <ConfirmAlert
-            visible={emailPattern}
-            title="Email Pattern"
-            Message="Please enter a valid email."
-            onConfirm={() => {
-              setAlertEmailPattern(false);
-            }}
-          />
-
         </View>
+        <ConfirmAlert
+  visible={Alert}
+  title="Error"
+  Message="All Fields are required"
+  onConfirm={() => {
+    showAlert(false);
+  }}
+/>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -410,7 +469,7 @@ const createStyles = (theme: any) =>
       borderColor: theme.border,
       borderRadius: 16,
       paddingHorizontal: 15,
-      marginBottom: 17,
+      marginBottom: 5,
     },
 
     input: {
@@ -418,6 +477,13 @@ const createStyles = (theme: any) =>
       marginLeft: 13,
       fontSize: 15,
       color: theme.text,
+    },
+
+    errorText: {
+      color: "#D32F2F",
+      fontSize: 12,
+      marginLeft: 4,
+      marginBottom: 14,
     },
 
     button: {

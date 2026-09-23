@@ -1,5 +1,6 @@
-import CustomButton from "@/constents/CustomButton";
+
 import { ConfirmAlert } from "@/componenets/CustomAlert";
+import CustomButton from "@/constents/CustomButton";
 import ThemeContext from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -8,7 +9,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,14 +35,12 @@ export default function AddCustomers() {
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [addressError, setAddressError] = useState("");
+  const [ AlertAll, setAlertALL]=useState(false);
   useEffect(() => {
     if (ID) {
-      console.log("Edit Customer Data:");
-      console.log("ID:", ID);
-      console.log("NAME:", NAME);
-      console.log("PHONE:", PHONE);
-      console.log("ADDRESS:", ADDRESS);
-
       setName(NAME?.toString() || "");
       setPhone(PHONE?.toString() || "");
       setAddress(ADDRESS?.toString() || "");
@@ -55,51 +53,64 @@ export default function AddCustomers() {
     setShowAlert(true);
   }
 
-  function handleValidation() {
-    const CName = name.trim();
-    const CPhone = phone.trim();
-    const CAddress = address.trim();
+  function validateName(value: string) {
+    const CName = value.trim();
 
     if (!CName) {
-      showError("Name Required", "Name can't be empty");
+      setNameError("Name can't be empty");
       return false;
     }
 
-    const namePattern = /^[A-Za-z ]+$/;
-
-    if (!namePattern.test(CName)) {
-      showError(
-        "Invalid Name",
-        "Name can contain letters only"
-      );
+    if (!/^[A-Za-z ]+$/.test(CName)) {
+      setNameError("Name can contain letters only");
       return false;
     }
 
-    if (!CPhone) {
-      showError("Phone Required", "Phone can't be empty");
-      return false;
-    }
-
-    const phonePattern = /^03\d{9}$/;
-
-    if (!phonePattern.test(CPhone)) {
-      showError(
-        "Invalid Phone",
-        "Enter a valid phone number e.g. 03001234567"
-      );
-      return false;
-    }
-
-    if (!CAddress) {
-      showError(
-        "Address Required",
-        "Address can't be empty"
-      );
-      return false;
-    }
-
+    setNameError("");
     return true;
   }
+
+  function validatePhone(value: string) {
+    const CPhone = value.trim();
+
+    if (!CPhone) {
+      setPhoneError("Phone can't be empty");
+      return false;
+    }
+    const phonePattern = /^(03\d{9}|\+92\d{10})$/;
+    if (!phonePattern.test(CPhone)) {
+      setPhoneError("Enter a valid phone number e.g.+9234748884, 03001234567and ");
+      return false;
+    }
+
+    setPhoneError("");
+    return true;
+  }
+
+  function validateAddress(value: string) {
+    const CAddress = value.trim();
+
+    if (!CAddress) {
+      setAddressError("Address can't be empty");
+      return false;
+    }
+
+    setAddressError("");
+    return true;
+  }
+
+ function handleValidation() {
+  if (!name.trim() && !phone.trim() && !address.trim()) {
+    setAlertALL(true);
+    return false;
+  }
+
+  const validName = validateName(name);
+  const validPhone = validatePhone(phone);
+  const validAddress = validateAddress(address);
+
+  return validName && validPhone && validAddress;
+}
 
   async function handleSave() {
     if (!handleValidation()) {
@@ -230,9 +241,18 @@ export default function AddCustomers() {
               placeholder="Enter customer name"
               placeholderTextColor={theme.placeholder}
               value={name}
-              onChangeText={setName}
+              onChangeText={(value) => {
+                setName(value);
+                validateName(value);
+              }}
             />
           </View>
+
+          {nameError ? (
+            <Text style={styles.errorText}>
+              {nameError}
+            </Text>
+          ) : null}
 
           {/* PHONE */}
           <Text
@@ -267,10 +287,19 @@ export default function AddCustomers() {
               placeholder="Enter phone number"
               placeholderTextColor={theme.placeholder}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(value) => {
+                setPhone(value);
+                validatePhone(value);
+              }}
               keyboardType="phone-pad"
             />
           </View>
+
+          {phoneError ? (
+            <Text style={styles.errorText}>
+              {phoneError}
+            </Text>
+          ) : null}
 
           {/* ADDRESS */}
           <Text
@@ -305,10 +334,19 @@ export default function AddCustomers() {
               placeholder="Enter customer address"
               placeholderTextColor={theme.placeholder}
               value={address}
-              onChangeText={setAddress}
+              onChangeText={(value) => {
+                setAddress(value);
+                validateAddress(value);
+              }}
               multiline
             />
           </View>
+
+          {addressError ? (
+            <Text style={styles.errorText}>
+              {addressError}
+            </Text>
+          ) : null}
 
           {/* BUTTON */}
           {loader ? (
@@ -336,7 +374,17 @@ export default function AddCustomers() {
         onConfirm={() => {
           setShowAlert(false);
         }}
+
+      
       />
+        <ConfirmAlert
+        visible={AlertAll}
+        title="required"
+        Message="All fields required"
+        onConfirm={()=>{
+          setAlertALL(false)
+        }}
+        />
     </KeyboardAvoidingView>
   );
 }
@@ -396,7 +444,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 14,
-    marginBottom: 18,
+    marginBottom: 5,
   },
 
   input: {
@@ -421,6 +469,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     minHeight: 75,
     textAlignVertical: "top",
+  },
+
+  errorText: {
+    color: "#D32F2F",
+    fontSize: 12,
+    marginBottom: 14,
+    marginLeft: 4,
   },
 
   loader: {
