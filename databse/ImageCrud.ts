@@ -76,7 +76,6 @@ export async function getProfileImage() {
 }
 
 export async function Order_Image() {
-
   const db = databaseConnection();
 
   try {
@@ -95,6 +94,7 @@ export async function Order_Image() {
   }
 }
 
+
 export async function addOrderImage(
   imageUri: string,
   orderId: number
@@ -102,6 +102,21 @@ export async function addOrderImage(
   const db = await databaseConnection();
 
   try {
+
+    const result = await db.getFirstAsync<{ count: number }>(
+      `
+      SELECT COUNT(*) as count
+      FROM ORDER_IMAGE
+      WHERE ORDER_ID = ?
+      `,
+      orderId
+    );
+
+    if ((result?.count ?? 0) >= 2) {
+      console.log("Image limit reached");
+      return false;
+    }
+
     await db.runAsync(
       `
       INSERT INTO ORDER_IMAGE
@@ -110,70 +125,89 @@ export async function addOrderImage(
       `,
       [orderId, imageUri]
     );
-    console.log("\ninsert successfullly")
+
+    console.log("\nImage inserted successfully");
+
+    return true;
+
   } catch (error) {
     console.log("Failed to insert image");
     throw error;
   }
 }
+
+
 export async function getOrderImage(orderId: number) {
   const db = await databaseConnection();
 
   try {
-    const result = await db.getFirstAsync<{ ORDER_IMAGE_URI: string }>(
+
+    const result = await db.getAllAsync<{
+      ORDER_IMAGE_ID: number;
+      ORDER_ID: number;
+      ORDER_IMAGE_URI: string;
+    }>(
       `
-      SELECT ORDER_IMAGE_URI
+      SELECT ORDER_IMAGE_ID, ORDER_ID, ORDER_IMAGE_URI
       FROM ORDER_IMAGE
-      WHERE ORDER_ID = ?
-      `,
-      Number(orderId)
-    );
-
-    console.log("Image get successfully");
-
-    return result?.ORDER_IMAGE_URI || null;
-  } catch (error) {
-    console.log("Failed to get order image");
-    throw error;
-  }
-}
-
-export async function deleteOrderImage(orderId: number) {
-  const db = await databaseConnection();
-
-  try {
-    await db.runAsync(
-      `
-      DELETE FROM ORDER_IMAGE
       WHERE ORDER_ID = ?
       `,
       orderId
     );
 
+    console.log("Images get successfully");
+
+    return result;
+
+  } catch (error) {
+    console.log("Failed to get order images");
+    throw error;
+  }
+}
+
+
+export async function deleteOrderImage(imageId: number) {
+  const db = await databaseConnection();
+
+  try {
+
+    await db.runAsync(
+      `
+      DELETE FROM ORDER_IMAGE
+      WHERE ORDER_IMAGE_ID = ?
+      `,
+      imageId
+    );
+
     console.log("Order image deleted successfully");
+
   } catch (error) {
     console.log("Failed to delete order image");
     throw error;
   }
 }
+
+
 export async function Update_OrderImage(
   imageuri: string,
-  orderId: number
+  imageId: number
 ) {
   const db = await databaseConnection();
 
   try {
+
     await db.runAsync(
       `
       UPDATE ORDER_IMAGE
       SET ORDER_IMAGE_URI = ?
-      WHERE ORDER_ID = ?
+      WHERE ORDER_IMAGE_ID = ?
       `,
       imageuri,
-      orderId
+      imageId
     );
 
     console.log("Order image updated successfully");
+
   } catch (error) {
     console.log("Failed to update OrderImage");
     throw error;

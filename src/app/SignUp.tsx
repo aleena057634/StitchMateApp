@@ -228,8 +228,8 @@ const [Alert, showAlert]=useState(false);
                 value={Username}
                 onChangeText={(value) => {
                   setName(value);
-                  validName(value);
-                }}
+                  setNameErro("")
+                }} onBlur={()=>{validName(Username)}}
                 placeholder="Enter your name"
                 placeholderTextColor={theme.placeholder}
               />
@@ -257,8 +257,8 @@ const [Alert, showAlert]=useState(false);
                 value={UserEmail}
                 onChangeText={(value) => {
                   setEmail(value);
-                  validEmail(value);
-                }}
+              setEmailErro("");
+                }} onBlur={()=>{    validEmail(UserEmail)}}
                 placeholder="Enter your email"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="email-address"
@@ -288,8 +288,8 @@ const [Alert, showAlert]=useState(false);
                 value={UserPhone}
                 onChangeText={(value) => {
                   setPhone(value);
-                  validphone(value);
-                }}
+                  setPhoneErro("")
+                }} onBlur={()=>{validPass(UserPhone);}}
                 placeholder="03001234567"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="phone-pad"
@@ -318,8 +318,8 @@ const [Alert, showAlert]=useState(false);
                 value={UserPas}
                 onChangeText={(value) => {
                   setPas(value);
-                  validPass(value);
-                }}
+                setPassErro("")
+                }} onBlur={()=>{  validPass(UserPas);}}
                 placeholder="Enter your password"
                 placeholderTextColor={theme.placeholder}
                 secureTextEntry={!showPassword}

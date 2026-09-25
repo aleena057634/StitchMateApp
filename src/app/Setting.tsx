@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { requestNotificationPermission } from "../utils/notification";
 
 import ThemeContext from "../context/ThemeContext";
 import CustomAlert, { ConfirmAlert } from "@/componenets/CustomAlert";
@@ -15,6 +16,7 @@ import CustomAlert, { ConfirmAlert } from "@/componenets/CustomAlert";
 export default function Setting() {
   const { theme, isDark, toggleTheme } = useContext(ThemeContext);
 const [showAlert, setShowAlert]=useState(false);
+const [PofileAlert,setProfileAlert]=useState(false);
   return (
     <View
       style={[
@@ -187,6 +189,7 @@ const [showAlert, setShowAlert]=useState(false);
               Dark
             </Text>
           </Pressable>
+
         </View>
       </View>
 
@@ -253,6 +256,53 @@ const [showAlert, setShowAlert]=useState(false);
         />
       </Pressable>
 
+<Pressable
+  style={[
+    styles.profileSettingButton,
+    {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+    },
+  ]}
+  onPress={() => {
+    setProfileAlert(true);
+  }}
+>
+  <View
+    style={[
+      styles.profileSettingIcon,
+      {
+        backgroundColor: theme.background,
+      },
+    ]}
+  >
+    <Ionicons
+      name="settings"
+      size={20}
+      color={theme.primary}
+    />
+  </View>
+
+  <Text
+    style={[
+      styles.profileSettingText,
+      {
+        color: theme.text,
+      },
+    ]}
+  >
+    Change Profile
+  </Text>
+
+  <Ionicons
+    name="chevron-forward"
+    size={18}
+    color={theme.secondaryText}
+  />
+</Pressable>
+ 
+
+
       <CustomAlert
   visible={showAlert}
   title="Logout"
@@ -260,6 +310,7 @@ const [showAlert, setShowAlert]=useState(false);
   onCancel={() => {
     setShowAlert(false);
   }}
+  
   onConfirm={async () => {
     await AsyncStorage.removeItem("userId");
     setShowAlert(false);
@@ -267,6 +318,19 @@ const [showAlert, setShowAlert]=useState(false);
     router.replace("/SignIn");
   }}
 />
+<CustomAlert
+visible={PofileAlert}
+title="Profile Setting"
+Message="Are You sure you want to change profile settings?"
+onCancel={()=>{setProfileAlert(false)
+
+}}
+onConfirm={()=>{
+  router.push("/Profile")
+  setProfileAlert(false)
+}}
+/>
+
     </View>
   );
 }
@@ -393,4 +457,31 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 4,
   },
+profileSettingButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 14,
+  marginTop: 15,
+  borderRadius: 14,
+  borderWidth: 1,
+ 
+
+},
+
+profileSettingIcon: {
+  width: 40,
+  height: 40,
+  borderRadius: 11,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 11,
+
+},
+
+profileSettingText: {
+  flex: 1,
+  fontSize: 13,
+  fontWeight: "600",
+ 
+},
 });

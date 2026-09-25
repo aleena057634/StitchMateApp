@@ -77,7 +77,8 @@ export default function AddCustomers() {
       setPhoneError("Phone can't be empty");
       return false;
     }
-     const phonePattern = /^(03\d{9}|\+923\d{9})$/;
+    setPhoneError("");
+    const phonePattern = /^(03\d{9}|\+923\d{9})$/;
     if (!phonePattern.test(CPhone)) {
       setPhoneError("Enter a valid phone number e.g. 03001234567");
       return false;
@@ -243,8 +244,9 @@ export default function AddCustomers() {
               value={name}
               onChangeText={(value) => {
                 setName(value);
-                validateName(value);
+                 setNameError("");
               }}
+              onBlur={()=>{validateName(name)}}
             />
           </View>
 
@@ -289,8 +291,9 @@ export default function AddCustomers() {
               value={phone}
               onChangeText={(value) => {
                 setPhone(value);
-                validatePhone(value);
+               setPhoneError("");
               }}
+              onBlur={()=>{validatePhone(phone)}}
               keyboardType="phone-pad"
             />
           </View>
@@ -336,8 +339,9 @@ export default function AddCustomers() {
               value={address}
               onChangeText={(value) => {
                 setAddress(value);
-                validateAddress(value);
+               setAddressError("")
               }}
+           onBlur={()=>{    validateAddress(address)}}
               multiline
             />
           </View>

@@ -180,8 +180,9 @@ export default function SignIn() {
                 value={email}
                 onChangeText={(value) => {
                   setEmail(value);
-                  validateEmail(value);
+                 setEmailError("")
                 }}
+                onBlur={()=>{ validateEmail(email);}}
                 keyboardType="email-address"
               />
             </View>
@@ -211,8 +212,8 @@ export default function SignIn() {
                 value={pass}
                 onChangeText={(value) => {
                   setPass(value);
-                  validatePassword(value);
-                }}
+                  SetPassError("");
+                }} onBlur={()=>{validatePassword(pass)}}
                 secureTextEntry={!showPass}
               />
 

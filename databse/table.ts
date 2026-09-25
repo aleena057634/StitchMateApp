@@ -84,18 +84,35 @@ catch(error){
 }
 }
 
-export async function dropMeasurementTable() {
-  try {
-    const db = await databaseConnection();
+// export async function dropMeasurementTable() {
+//   try {
+//     const db = await databaseConnection();
 
-    await db.execAsync(`
-      DROP TABLE IF EXISTS MEASUREMENTS;
-    `);
+//     await db.execAsync(`
+//       DROP TABLE IF EXISTS MEASUREMENTS;
+//     `);
 
-    console.log("MEASUREMENTS table dropped successfully");
-  } catch (error) {
-    console.log("Failed to drop MEASUREMENTS table:", error);
+//     console.log("MEASUREMENTS table dropped successfully");
+//   } catch (error) {
+//     console.log("Failed to drop MEASUREMENTS table:", error);
+//   }
+// }
+export async function getCurrentUserDetail(){
+ const  db=await databaseConnection();
+ try{
+  const id=await AsyncStorage.getItem("userId");
+  if(id){
+ const result=db.getFirstAsync(
+  ` SELECT * FROM USERS WHERE ID=?
+  `,[id]
+ )
+ return result;
   }
+ 
+ }
+ catch(error){
+console.log("\nFailed to get user detail")
+ }
 }
 
 
@@ -175,5 +192,19 @@ export async function getCustomerName() {
   } catch (error) {
     // console.log("Failed to get customer name:", error);
     return null;
+  }
+}
+// password change krna ka code hai.....................
+export async function ChangePassword(password: string) {
+  const db = await databaseConnection();
+  const id = await AsyncStorage.getItem("userId");
+
+  if (id) {
+    await db.runAsync(
+      `UPDATE USERS SET PASSWORD = ? WHERE ID = ?`,
+      [password, id]
+    );
+
+    console.log("PASSWORD UPDATE SUCCESSFULLY");
   }
 }

@@ -13,7 +13,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-
+import ImageView from "react-native-image-viewing";
 import {
   getOrderImage,
   deleteOrderImage,
@@ -59,70 +59,86 @@ export default function OrderDetail() {
 
   const [paymentAmount, setPaymentAmount] = useState(0);
 
-  const [orderImage, setOrderImage] = useState<string | null>(null);
+  const [orderImages, setOrderImages] = useState<any[]>([]);
 
   const [deleteAlert, setDeleteAlert] = useState(false);
 
   const [updateAlert, setUpdateAlert] = useState(false);
 
   const [ImageAlert, setImageAlert] = useState(false);
-
+  const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   // Status confirmation
   const [statusConfirmAlert, setStatusConfirmAlert] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
 
-
-  const updateOrderImage = async (newImageUri: string) => {
+  const loadOrderImages = async () => {
     try {
-      await Update_OrderImage(newImageUri, Number(orderId));
+      const images = await getOrderImage(Number(orderId));
 
-      setOrderImage(newImageUri);
+      setOrderImages(images);
     } catch (error) {
-      console.log("Failed to update order image:", error);
+      console.log("Failed to load images:", error);
     }
   };
+  // Image view galary bnana ka lia ha
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const takePhotoForUpdate = async () => {
-    const permission =
-      await ImagePicker.requestCameraPermissionsAsync();
+  useEffect(() => {
+    loadOrderImages();
+  }, [orderId]);
 
-    if (!permission.granted) {
-      return;
-    }
+  // const updateOrderImage = async (newImageUri: string) => {
+  //   try {
+  //     await Update_OrderImage(newImageUri, Number(orderId));
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+  //     setOrderImages(newImageUri);
+  //   } catch (error) {
+  //     console.log("Failed to update order image:", error);
+  //   }
+  // };
 
-    if (!result.canceled) {
-      const newImageUri = result.assets[0].uri;
+  // const takePhotoForUpdate = async () => {
+  //   const permission =
+  //     await ImagePicker.requestCameraPermissionsAsync();
 
-      await updateOrderImage(newImageUri);
+  //   if (!permission.granted) {
+  //     return;
+  //   }
 
-      setImageAlert(false);
-    }
-  };
+  //   const result = await ImagePicker.launchCameraAsync({
+  //     mediaTypes: ["images"],
+  //     // allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 1,
+  //   });
 
-  const pickImageForUpdate = async () => {
-    const result =
-      await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
+  //   if (!result.canceled) {
+  //     const newImageUri = result.assets[0].uri;
 
-    if (!result.canceled) {
-      const newImageUri = result.assets[0].uri;
+  //     await updateOrderImage(newImageUri);
 
-      await updateOrderImage(newImageUri);
+  //     setImageAlert(false);
+  //   }
+  // };
 
-      setImageAlert(false);
-    }
-  };
+  // const pickImageForUpdate = async () => {
+  //   const result =
+  //     await ImagePicker.launchImageLibraryAsync({
+  //       mediaTypes: ["images"],
+  //       allowsEditing: true,
+  //       aspect: [1, 1],
+  //       quality: 1,
+  //     });
+
+  //   if (!result.canceled) {
+  //     const newImageUri = result.assets[0].uri;
+
+  //     await updateOrderImage(newImageUri);
+
+  //     setImageAlert(false);
+  //   }
+  // };
 
   const onPartialConfirm = async () => {
     await Partial_Payment(
@@ -142,18 +158,18 @@ export default function OrderDetail() {
     router.replace("/Payment");
   };
 
-  const OrderImage = async () => {
-    const imageUri = await getOrderImage(Number(orderId));
+  // const OrderImage = async () => {
+  //   const imageUri = await getOrderImage(Number(orderId));
 
-    if (imageUri) {
-      setOrderImage(imageUri);
-    }
-  };
+  //   if (imageUri) {
+  //     setOrderImage(String(imageUri));
+  //   }
+  // };
 
-  const delete_image = async () => {
-    await deleteOrderImage(Number(orderId));
-    setOrderImage(null);
-  };
+  // const delete_image = async () => {
+  //   await deleteOrderImage(Number(orderId));
+  //   setOrderImage(null);
+  // };
 
   async function loadOrderDetail() {
     try {
@@ -174,12 +190,12 @@ export default function OrderDetail() {
 
   useEffect(() => {
     loadOrderDetail();
-    OrderImage();
+
   }, [orderId]);
 
   // Status button press
   const handleStatusChange = (status: string) => {
-    
+
     if (order.ORDER_STAUS === status) {
       return;
     }
@@ -254,7 +270,7 @@ export default function OrderDetail() {
   return (
     <ScrollView
       style={styles.container}
-      showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={true}
       contentContainerStyle={styles.content}
     >
       <View style={styles.header}>
@@ -353,12 +369,12 @@ export default function OrderDetail() {
             return (
               <Pressable
                 key={status}
-               
+
                 style={[
                   styles.statusButton,
                   isActive &&
-                    styles.activeStatusButton,
-                  
+                  styles.activeStatusButton,
+
                 ]}
                 onPress={() =>
                   handleStatusChange(status)
@@ -368,7 +384,7 @@ export default function OrderDetail() {
                   style={[
                     styles.statusButtonText,
                     isActive &&
-                      styles.activeStatusButtonText,
+                    styles.activeStatusButtonText,
                   ]}
                 >
                   {status}
@@ -548,7 +564,7 @@ export default function OrderDetail() {
 
           <View>
             <Text style={styles.infoLabel}>
-              Departure Date
+              Delievery Date
             </Text>
 
             <Text style={styles.infoValue}>
@@ -646,46 +662,40 @@ export default function OrderDetail() {
         </>
       ) : null}
 
-      {orderImage && (
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: orderImage }}
-            style={styles.orderImage}
-          />
+      {/* ---------------------------------------------------------------------------------------- */}
+      {orderImages.length > 0 && (
+  <>
+    <Text style={styles.sectionTitle}>
+      Order Designs
+    </Text>
 
-          <View style={styles.imageActions}>
-            <TouchableOpacity
-              style={styles.imageActionButton}
-              onPress={() => {
-                setDeleteAlert(true);
-              }}
-            >
-              <Ionicons
-                name="trash-outline"
-                size={20}
-                color={theme.white}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.imageActionButton}
-              onPress={() => {
-                setUpdateAlert(true);
-              }}
-            >
-              <Ionicons
-                name="pencil-outline"
-                size={20}
-                color={theme.white}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
+    <View style={styles.imagesCard}>
+      <View style={styles.imagesRow}>
+        {orderImages.map((item, index) => (
+          <TouchableOpacity
+            key={item.ORDER_IMAGE_ID}
+            style={styles.imageContainer}
+            onPress={() => {
+              setSelectedImageIndex(index);
+              setImageViewerVisible(true);
+            }}
+            activeOpacity={0.85}
+          >
+            <Image
+              source={{ uri: item.ORDER_IMAGE_URI }}
+              style={styles.orderImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  </>
+)}
+      {/* ------------------------------------------------------------------------------------------ */}
       {/* Delete Image Alert */}
 
-      <CustomAlert
+      {/* <CustomAlert
         visible={deleteAlert}
         title="Delete Order Design"
         Message="Are you sure you want to Delete design?"
@@ -696,11 +706,11 @@ export default function OrderDetail() {
           await delete_image();
           setDeleteAlert(false);
         }}
-      />
+      /> */}
 
       {/* Update Image Confirmation */}
 
-      <CustomAlert
+      {/* <CustomAlert
         visible={updateAlert}
         title="Update Design"
         Message="Are you sure you want to update the design?"
@@ -711,16 +721,16 @@ export default function OrderDetail() {
           setUpdateAlert(false);
           setImageAlert(true);
         }}
-      />
+      /> */}
 
       {/* Camera / Gallery */}
 
-      <ProfileImageModal
+      {/* <ProfileImageModal
         visible={ImageAlert}
         onClose={() => setImageAlert(false)}
         onCamera={takePhotoForUpdate}
         onGallery={pickImageForUpdate}
-      />
+      /> */}
 
       {/* Status Confirmation */}
 
@@ -783,6 +793,20 @@ export default function OrderDetail() {
         }}
         onConfirm={onPartialConfirm}
       />
+
+      <ImageView
+        images={orderImages.map((item) => ({
+          uri: item.ORDER_IMAGE_URI,
+        }))}
+        imageIndex={selectedImageIndex}
+        visible={imageViewerVisible}
+        onRequestClose={() => {
+          setImageViewerVisible(false);
+        }}
+        doubleTapToZoomEnabled={true}
+        swipeToCloseEnabled={true}
+      />
+
     </ScrollView>
   );
 }
@@ -800,34 +824,32 @@ const createStyles = (theme: any) =>
       paddingBottom: 35,
     },
 
+    imagesCard: {
+      borderRadius: 16,
+      padding: 10,
+      borderWidth: 1,
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+    },
+
+    imagesRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+
     imageContainer: {
-      position: "relative",
-      marginTop: 10,
+      width: "48%",
+      height: 170,
       borderRadius: 12,
       overflow: "hidden",
+      backgroundColor: theme.inputBackground,
     },
 
     orderImage: {
       width: "100%",
-      height: 200,
+      height: "100%",
       borderRadius: 12,
-    },
-
-    imageActions: {
-      position: "absolute",
-      top: 10,
-      right: 10,
-      flexDirection: "row",
-      gap: 8,
-    },
-
-    imageActionButton: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "rgba(0,0,0,0.6)",
     },
 
     header: {

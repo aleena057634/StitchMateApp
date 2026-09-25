@@ -214,10 +214,14 @@ export default function Dashboard() {
     Let's get stitching!
   </Text>
 </View> */}
-<View style={{marginStart:5}}>
-  <Text style={{fontStyle:"italic"}} >Welcome back,</Text>
-  <Text style={{fontFamily:"serif", }}>  {Name || "Tailor"}</Text>
+<View style={{ marginStart: 10 }}>
+  <Text style={{ fontStyle: "italic", color: theme.text }}>
+    Welcome back,
+  </Text>
 
+  <Text style={{ fontFamily: "serif", color: theme.text }}>
+    {Name || "Tailor"}
+  </Text>
 </View>
           </View>
 
