@@ -1,4 +1,3 @@
-
 import React, { useContext } from "react";
 import {
   View,
@@ -7,7 +6,6 @@ import {
   Modal,
   StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import ThemeContext from "@/context/ThemeContext";
 
 type Props = {
@@ -37,7 +35,7 @@ export default function CustomAlert({
   return (
     <Modal
       visible={visible}
-      transparent={true}
+      transparent
       animationType="fade"
     >
       <View style={styles.overlay}>
@@ -50,12 +48,7 @@ export default function CustomAlert({
             },
           ]}
         >
-          <Text
-            style={[
-              styles.title,
-              { color: theme.text },
-            ]}
-          >
+          <Text style={[styles.title, { color: theme.text }]}>
             {title}
           </Text>
 
@@ -124,7 +117,7 @@ export function ConfirmAlert({
     <Modal
       visible={visible}
       animationType="fade"
-      transparent={true}
+      transparent
     >
       <View style={styles.overlay}>
         <View
@@ -136,12 +129,7 @@ export function ConfirmAlert({
             },
           ]}
         >
-          <Text
-            style={[
-              styles.title,
-              { color: theme.text },
-            ]}
-          >
+          <Text style={[styles.title, { color: theme.text }]}>
             {title}
           </Text>
 
@@ -158,9 +146,7 @@ export function ConfirmAlert({
             <Pressable
               style={[
                 styles.okButton,
-                {
-                  backgroundColor: theme.primary,
-                },
+                { backgroundColor: theme.primary },
               ]}
               onPress={onConfirm}
             >
@@ -205,16 +191,15 @@ export function ProfileImageModal({
       <View style={styles.overlay}>
         <View
           style={[
-            styles.modalBox,
+            styles.profileModal,
             {
               backgroundColor: theme.card,
-              borderColor: theme.border,
             },
           ]}
         >
           <Text
             style={[
-              styles.title,
+              styles.profileTitle,
               { color: theme.text },
             ]}
           >
@@ -223,33 +208,21 @@ export function ProfileImageModal({
 
           <Text
             style={[
-              styles.message,
+              styles.profileMessage,
               { color: theme.secondaryText },
             ]}
           >
             Choose an option
           </Text>
 
-          <View style={styles.options}>
+          <View style={styles.profileOptions}>
             <Pressable
-              style={[
-                styles.option,
-                {
-                  backgroundColor: theme.inputBackground,
-                  borderColor: theme.border,
-                },
-              ]}
+              style={styles.profileOption}
               onPress={onCamera}
             >
-              <Ionicons
-                name="camera"
-                size={28}
-                color={theme.primary}
-              />
-
               <Text
                 style={[
-                  styles.optionText,
+                  styles.profileOptionText,
                   { color: theme.text },
                 ]}
               >
@@ -258,51 +231,33 @@ export function ProfileImageModal({
             </Pressable>
 
             <Pressable
-              style={[
-                styles.option,
-                {
-                  backgroundColor: theme.inputBackground,
-                  borderColor: theme.border,
-                },
-              ]}
+              style={styles.profileOption}
               onPress={onGallery}
             >
-              <Ionicons
-                name="images"
-                size={28}
-                color={theme.primary}
-              />
-
               <Text
                 style={[
-                  styles.optionText,
+                  styles.profileOptionText,
                   { color: theme.text },
                 ]}
               >
                 Gallery
               </Text>
             </Pressable>
-          </View>
 
-          <Pressable
-            style={[
-              styles.cancelButton,
-              {
-                backgroundColor: theme.inputBackground,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={onClose}
-          >
-            <Text
-              style={[
-                styles.cancelText,
-                { color: theme.text },
-              ]}
+            <Pressable
+              style={styles.profileOption}
+              onPress={onClose}
             >
-              Cancel
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.profileOptionText,
+                  { color: theme.secondaryText },
+                ]}
+              >
+                Cancel
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </Modal>
@@ -318,6 +273,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
+  // CustomAlert + ConfirmAlert
+
   alertBox: {
     width: "88%",
     borderRadius: 18,
@@ -330,21 +287,6 @@ const styles = StyleSheet.create({
       width: 0,
       height: 5,
     },
-  },
-
-  modalBox: {
-    width: "88%",
-    borderRadius: 18,
-    padding: 22,
-    borderWidth: 1,
-    elevation: 8,
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    alignItems: "center",
   },
 
   title: {
@@ -365,36 +307,11 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
 
-  options: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 15,
-    marginTop: 22,
-  },
-
-  option: {
-    width: 105,
-    height: 90,
-    borderWidth: 1,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  optionText: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginTop: 7,
-  },
-
   cancelButton: {
     minWidth: 80,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   cancelText: {
@@ -419,5 +336,42 @@ const styles = StyleSheet.create({
   confirmButtonContainer: {
     alignItems: "flex-end",
     marginTop: 22,
+  },
+
+  // Profile Image Modal
+
+  profileModal: {
+    width: "88%",
+    borderRadius: 18,
+    padding: 22,
+    alignItems: "center",
+  },
+
+  profileTitle: {
+    fontSize: 19,
+    fontWeight: "700",
+  },
+
+  profileMessage: {
+    fontSize: 14,
+    marginTop: 8,
+  },
+
+  profileOptions: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 22,
+  },
+
+  profileOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+
+  profileOptionText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

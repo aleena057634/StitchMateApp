@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
 import { SignInValidation } from "../../databse/queries";
@@ -41,7 +42,7 @@ export default function SignIn() {
       return false;
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
 
     if (!emailPattern.test(Email)) {
       setEmailError("Invalid email");
@@ -131,30 +132,22 @@ export default function SignIn() {
       >
         <View style={styles.container}>
 
-          {/* Top Icon */}
-          <View style={styles.topIcon}>
-            <Ionicons
-              name="cut-outline"
-              size={32}
-              color={theme.primary}
-            />
+          {/* Header */}
+          <View style={styles.header}>
+            
+            
+
+            <Text style={styles.title}>
+              Welcome Back
+            </Text>
+
+            <Text style={styles.subtitle}>
+              Sign in to continue to StitchMate
+            </Text>
           </View>
 
-          <Text style={styles.brandName}>
-            StitchMate
-          </Text>
-
-          <Text style={styles.title}>
-            Welcome Back
-          </Text>
-
-          <Text style={styles.subtitle}>
-            Sign in to continue managing your
-            tailor business
-          </Text>
-
-          {/* Login Card */}
-          <View style={styles.loginCard}>
+          {/* Form */}
+          <View style={styles.form}>
 
             {/* Email */}
             <Text style={styles.label}>
@@ -175,13 +168,10 @@ export default function SignIn() {
                 value={email}
                 onChangeText={(value) => {
                   setEmail(value);
-                  setEmailError("");
+                 setEmailError("")
                 }}
-                onBlur={() => {
-                  validateEmail(email);
-                }}
+                onBlur={()=>{ validateEmail(email);}}
                 keyboardType="email-address"
-                autoCapitalize="none"
               />
             </View>
 
@@ -211,22 +201,18 @@ export default function SignIn() {
                 onChangeText={(value) => {
                   setPass(value);
                   SetPassError("");
-                }}
-                onBlur={() => {
-                  validatePassword(pass);
-                }}
+                }} onBlur={()=>{validatePassword(pass)}}
                 secureTextEntry={!showPass}
               />
 
               <Pressable
                 onPress={() => setShowPass(!showPass)}
-                style={styles.eyeButton}
               >
                 <Ionicons
                   name={
                     showPass
-                      ? "eye-outline"
-                      : "eye-off-outline"
+                      ? "eye"
+                      : "eye-off"
                   }
                   size={20}
                   color={theme.primary}
@@ -240,21 +226,12 @@ export default function SignIn() {
               </Text>
             ) : null}
 
-            {/* Forgot Password UI */}
-            <Pressable
-              style={styles.forgotButton}
-            >
-              <Text style={styles.forgotText}>
-                Forgot Password?
-              </Text>
-            </Pressable>
-
-            {/* Sign In Button */}
+            {/* Button */}
             {loading ? (
               <View style={styles.loader}>
                 <ActivityIndicator
                   size="small"
-                  color={theme.buttonText}
+                  color={theme.primary}
                 />
               </View>
             ) : (
@@ -267,34 +244,24 @@ export default function SignIn() {
                 <Text style={styles.buttonText}>
                   Sign In
                 </Text>
-
-                <Ionicons
-                  name="arrow-forward"
-                  size={19}
-                  color={theme.buttonText}
-                />
               </Pressable>
             )}
           </View>
 
           {/* Sign Up */}
-          <View style={styles.signupContainer}>
-            <Text style={styles.signup}>
-              Don't have an account?
-            </Text>
-
-            <Pressable
+          <Text style={styles.signup}>
+            Don't have an account?{" "}
+            <Text
+              style={styles.signupLink}
               onPress={() =>
                 router.push("/SignUp")
               }
             >
-              <Text style={styles.signupLink}>
-                Create Account
-              </Text>
-            </Pressable>
-          </View>
+              Sign Up
+            </Text>
+          </Text>
 
-          {/* Alerts */}
+          {/* All Fields Alert */}
           <ConfirmAlert
             visible={Aalert}
             title="Error"
@@ -304,6 +271,7 @@ export default function SignIn() {
             }}
           />
 
+          {/* Invalid Credentials Alert */}
           <ConfirmAlert
             visible={alertPass}
             title="Error"
@@ -313,6 +281,7 @@ export default function SignIn() {
             }}
           />
 
+          {/* Unexpected Error Alert */}
           <ConfirmAlert
             visible={errorAlert}
             title="Error"
@@ -337,63 +306,38 @@ const createStyles = (theme: any) =>
 
     scrollContent: {
       flexGrow: 1,
-      justifyContent: "center",
     },
 
     container: {
-      flex: 1,
+      flexGrow: 1,
       paddingHorizontal: 25,
-      paddingVertical: 35,
+      paddingTop: 45,
+      paddingBottom: 35,
       justifyContent: "center",
     },
 
-    topIcon: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      backgroundColor: theme.card,
-      borderWidth: 1,
-      borderColor: theme.border,
-      alignSelf: "center",
+  header: { alignItems: "center", 
+    marginBottom: 35,
+     paddingHorizontal: 10, },
+
+    logoCircle: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
       justifyContent: "center",
       alignItems: "center",
-      marginBottom: 12,
+      marginBottom: 14,
     },
 
-    brandName: {
-      color: theme.primary,
-      fontSize: 15,
-      fontWeight: "800",
-      textAlign: "center",
-      letterSpacing: 1,
-      marginBottom: 8,
-    },
+   title: { fontSize: 32, fontWeight: "900", 
+    color: theme.primary, 
+    textAlign: "center", letterSpacing: 0.3, },
 
-    title: {
-      fontSize: 30,
-      fontWeight: "800",
-      color: theme.text,
-      textAlign: "center",
-    },
+   subtitle: { fontSize: 14, color: theme.secondaryText,
+     textAlign: "center", marginTop: 9, lineHeight: 20, },
 
-    subtitle: {
-      fontSize: 13,
-      color: theme.secondaryText,
-      textAlign: "center",
-      marginTop: 8,
-      lineHeight: 19,
-      paddingHorizontal: 25,
-      marginBottom: 28,
-    },
-
-    loginCard: {
+    form: {
       width: "100%",
-      backgroundColor: theme.card,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 22,
-      padding: 20,
-      elevation: 4,
     },
 
     label: {
@@ -406,85 +350,60 @@ const createStyles = (theme: any) =>
     inputContainer: {
       flexDirection: "row",
       alignItems: "center",
-      height: 53,
-      backgroundColor: theme.background,
+      height: 52,
+      backgroundColor: theme.card,
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 14,
-      paddingHorizontal: 14,
+      borderRadius: 16,
+      paddingHorizontal: 15,
       marginBottom: 5,
     },
 
     inputText: {
       flex: 1,
-      marginLeft: 12,
+      marginLeft: 13,
       fontSize: 15,
       color: theme.text,
-    },
-
-    eyeButton: {
-      paddingLeft: 10,
     },
 
     errorText: {
       color: "#D32F2F",
       fontSize: 12,
       marginLeft: 4,
-      marginBottom: 12,
-    },
-
-    forgotButton: {
-      alignSelf: "flex-end",
-      marginTop: 2,
-      marginBottom: 18,
-    },
-
-    forgotText: {
-      color: theme.primary,
-      fontSize: 13,
-      fontWeight: "700",
+      marginBottom: 14,
     },
 
     button: {
       height: 53,
       backgroundColor: theme.primary,
-      borderRadius: 14,
+      borderRadius: 16,
       justifyContent: "center",
       alignItems: "center",
-      flexDirection: "row",
-      gap: 8,
+      marginTop: 4,
+      elevation: 3,
     },
 
     buttonText: {
-      color: theme.buttonText,
+      color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "700",
     },
 
     loader: {
       height: 53,
-      backgroundColor: theme.primary,
-      borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-    },
-
-    signupContainer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: 24,
-      gap: 5,
     },
 
     signup: {
+      textAlign: "center",
+      marginTop: 22,
       color: theme.secondaryText,
       fontSize: 14,
     },
 
     signupLink: {
       color: theme.primary,
-      fontSize: 14,
       fontWeight: "800",
     },
   });

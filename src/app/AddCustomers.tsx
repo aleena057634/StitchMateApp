@@ -1,4 +1,3 @@
-
 import CustomButton from "@/constents/CustomButton";
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
@@ -7,6 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Button,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -29,6 +29,7 @@ export default function AddCustomers() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+
   const [loader, setLoader] = useState(false);
 
   const [showAlert, setShowAlert] = useState(false);
@@ -38,7 +39,9 @@ export default function AddCustomers() {
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [addressError, setAddressError] = useState("");
-  const [ AlertAll, setAlertALL]=useState(false);
+
+  const [AlertAll, setAlertALL] = useState(false);
+
   useEffect(() => {
     if (ID) {
       setName(NAME?.toString() || "");
@@ -77,8 +80,9 @@ export default function AddCustomers() {
       setPhoneError("Phone can't be empty");
       return false;
     }
-    setPhoneError("");
+
     const phonePattern = /^(03\d{9}|\+923\d{9})$/;
+
     if (!phonePattern.test(CPhone)) {
       setPhoneError("Enter a valid phone number e.g. 03001234567");
       return false;
@@ -100,18 +104,18 @@ export default function AddCustomers() {
     return true;
   }
 
- function handleValidation() {
-  if (!name.trim() && !phone.trim() && !address.trim()) {
-    setAlertALL(true);
-    return false;
+  function handleValidation() {
+    if (!name.trim() && !phone.trim() && !address.trim()) {
+      setAlertALL(true);
+      return false;
+    }
+
+    const validName = validateName(name);
+    const validPhone = validatePhone(phone);
+    const validAddress = validateAddress(address);
+
+    return validName && validPhone && validAddress;
   }
-
-  const validName = validateName(name);
-  const validPhone = validatePhone(phone);
-  const validAddress = validateAddress(address);
-
-  return validName && validPhone && validAddress;
-}
 
   async function handleSave() {
     if (!handleValidation()) {
@@ -139,6 +143,7 @@ export default function AddCustomers() {
       router.back();
     } catch (error) {
       console.log("Customer save failed:", error);
+
       setLoader(false);
 
       showError(
@@ -168,6 +173,7 @@ export default function AddCustomers() {
         <View style={styles.form}>
 
           {/* HEADER */}
+
           <View style={styles.header}>
             <View
               style={[
@@ -210,6 +216,7 @@ export default function AddCustomers() {
           </View>
 
           {/* NAME */}
+
           <Text
             style={[
               styles.label,
@@ -244,9 +251,11 @@ export default function AddCustomers() {
               value={name}
               onChangeText={(value) => {
                 setName(value);
-                 setNameError("");
+                setNameError("");
               }}
-              onBlur={()=>{validateName(name)}}
+              onBlur={() => {
+                validateName(name);
+              }}
             />
           </View>
 
@@ -257,6 +266,7 @@ export default function AddCustomers() {
           ) : null}
 
           {/* PHONE */}
+
           <Text
             style={[
               styles.label,
@@ -291,9 +301,11 @@ export default function AddCustomers() {
               value={phone}
               onChangeText={(value) => {
                 setPhone(value);
-               setPhoneError("");
+                setPhoneError("");
               }}
-              onBlur={()=>{validatePhone(phone)}}
+              onBlur={() => {
+                validatePhone(phone);
+              }}
               keyboardType="phone-pad"
             />
           </View>
@@ -305,6 +317,7 @@ export default function AddCustomers() {
           ) : null}
 
           {/* ADDRESS */}
+
           <Text
             style={[
               styles.label,
@@ -339,9 +352,11 @@ export default function AddCustomers() {
               value={address}
               onChangeText={(value) => {
                 setAddress(value);
-               setAddressError("")
+                setAddressError("");
               }}
-           onBlur={()=>{    validateAddress(address)}}
+              onBlur={() => {
+                validateAddress(address);
+              }}
               multiline
             />
           </View>
@@ -352,7 +367,10 @@ export default function AddCustomers() {
             </Text>
           ) : null}
 
+    
+
           {/* BUTTON */}
+
           {loader ? (
             <ActivityIndicator
               size="large"
@@ -370,7 +388,8 @@ export default function AddCustomers() {
         </View>
       </ScrollView>
 
-      {/* ALERT */}
+      {/* ERROR ALERT */}
+
       <ConfirmAlert
         visible={showAlert}
         title={alertTitle}
@@ -378,17 +397,18 @@ export default function AddCustomers() {
         onConfirm={() => {
           setShowAlert(false);
         }}
-
-      
       />
-        <ConfirmAlert
+
+      {/* ALL FIELDS ALERT */}
+
+      <ConfirmAlert
         visible={AlertAll}
-        title="required"
+        title="Required"
         Message="All fields required"
-        onConfirm={()=>{
-          setAlertALL(false)
+        onConfirm={() => {
+          setAlertALL(false);
         }}
-        />
+      />
     </KeyboardAvoidingView>
   );
 }

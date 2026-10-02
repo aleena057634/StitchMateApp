@@ -1,5 +1,6 @@
 import { databaseConnection } from "./databaseConnection";
-// Acha is ko saveMeasurmntbutton ma ma call kroo gi usi file ma thek hai
+
+// Acha is ko saveMeasurementButton ma ma call kroo gi usi file ma thek hai
 
 export async function addMeasurement(
   customerId: number,
@@ -27,16 +28,25 @@ export async function addMeasurement(
         SHOULDER,
         COLLAR,
         LENGTH,
+        ARMHOLE,
         NOTES
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       customerId,
       type,
       measurement.Chest ? Number(measurement.Chest) : null,
       measurement.Waist ? Number(measurement.Waist) : null,
-      measurement.Qameez_Length ? Number(measurement.Qameez_Length) : null,
-      measurement.Shirt_Length ? Number(measurement.Shirt_Length) : null,
-      measurement.Shalwar_Length ? Number(measurement.Shalwar_Length) : null,
-      measurement.Trouser_Length ? Number(measurement.Trouser_Length) : null,
+      measurement.Qameez_Length
+        ? Number(measurement.Qameez_Length)
+        : null,
+      measurement.Shirt_Length
+        ? Number(measurement.Shirt_Length)
+        : null,
+      measurement.Shalwar_Length
+        ? Number(measurement.Shalwar_Length)
+        : null,
+      measurement.Trouser_Length
+        ? Number(measurement.Trouser_Length)
+        : null,
       measurement.Sleeve ? Number(measurement.Sleeve) : null,
       measurement.Daman ? Number(measurement.Daman) : null,
       measurement.Hip ? Number(measurement.Hip) : null,
@@ -45,16 +55,17 @@ export async function addMeasurement(
       measurement.Shoulder ? Number(measurement.Shoulder) : null,
       measurement.Collar ? Number(measurement.Collar) : null,
       measurement.Length ? Number(measurement.Length) : null,
+      measurement.Armhole ? Number(measurement.Armhole) : null,
       measurement.Notes || null
     );
 
     console.log("Measurement added successfully");
+  } catch (error) {
+    console.log("FAILED TO ADD MEASUREMENT:", error);
+    throw error;
+  }
+}
 
-  }catch (error) {
-  console.log("FAILED TO ADD MEASUREMENT:", error);
-  throw error;
-}
-}
 export async function getMeasurements(customerId: number) {
   try {
     const db = await databaseConnection();
@@ -74,6 +85,7 @@ export async function getMeasurements(customerId: number) {
     throw error;
   }
 }
+
 export async function updateMeasurement(
   measurementId: number,
   measurement: any
@@ -97,14 +109,23 @@ export async function updateMeasurement(
         SHOULDER = ?,
         COLLAR = ?,
         LENGTH = ?,
+        ARMHOLE = ?,
         NOTES = ?
       WHERE MEASUREMENT_ID = ?`,
       measurement.Chest ? Number(measurement.Chest) : null,
       measurement.Waist ? Number(measurement.Waist) : null,
-      measurement.Qameez_Length ? Number(measurement.Qameez_Length) : null,
-      measurement.Shirt_Length ? Number(measurement.Shirt_Length) : null,
-      measurement.Shalwar_Length ? Number(measurement.Shalwar_Length) : null,
-      measurement.Trouser_Length ? Number(measurement.Trouser_Length) : null,
+      measurement.Qameez_Length
+        ? Number(measurement.Qameez_Length)
+        : null,
+      measurement.Shirt_Length
+        ? Number(measurement.Shirt_Length)
+        : null,
+      measurement.Shalwar_Length
+        ? Number(measurement.Shalwar_Length)
+        : null,
+      measurement.Trouser_Length
+        ? Number(measurement.Trouser_Length)
+        : null,
       measurement.Sleeve ? Number(measurement.Sleeve) : null,
       measurement.Daman ? Number(measurement.Daman) : null,
       measurement.Hip ? Number(measurement.Hip) : null,
@@ -113,6 +134,7 @@ export async function updateMeasurement(
       measurement.Shoulder ? Number(measurement.Shoulder) : null,
       measurement.Collar ? Number(measurement.Collar) : null,
       measurement.Length ? Number(measurement.Length) : null,
+      measurement.Armhole ? Number(measurement.Armhole) : null,
       measurement.Notes || null,
       measurementId
     );
@@ -124,7 +146,6 @@ export async function updateMeasurement(
     return false;
   }
 }
-
 
 export async function deleteMeasurement(measurementId: number) {
   try {
@@ -145,5 +166,3 @@ export async function deleteMeasurement(measurementId: number) {
     return false;
   }
 }
-
-

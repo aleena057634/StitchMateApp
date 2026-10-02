@@ -242,7 +242,7 @@ export default function CustomerScreen() {
           },
         ]}
         onPress={() => {
-          router.push("/AddOrder");
+          router.push("/OrderList");
         }}
         activeOpacity={0.8}
       >

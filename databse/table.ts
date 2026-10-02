@@ -44,59 +44,55 @@ export async function Customer_Table() {
 // Create Measurement Table
 
 export async function Measurement_table() {
-try{
+  try {
+    const db = await databaseConnection();
 
-  const db=await databaseConnection();
-  
-  await db.execAsync(`
-  CREATE TABLE IF NOT EXISTS MEASUREMENTS (
-    MEASUREMENT_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    CUSTOMER_ID INTEGER NOT NULL,
-    TYPE TEXT NOT NULL,
-    MEASUREMENT_NAME TEXT,
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS MEASUREMENTS (
+        MEASUREMENT_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        CUSTOMER_ID INTEGER NOT NULL,
+        TYPE TEXT NOT NULL,
+        MEASUREMENT_NAME TEXT,
+        CHEST REAL,
+        WAIST REAL,
+        QAMEEZ_LENGTH REAL,
+        SHIRT_LENGTH REAL,
+        SHALWAR_LENGTH REAL,
+        TROUSER_LENGTH REAL,
+        SLEEVE REAL,
+        DAMAN REAL,
+        HIP REAL,
+        THIGH REAL,
+        BOTTOM REAL,
+        SHOULDER REAL,
+        COLLAR REAL,
+        LENGTH REAL,
+        ARMHOLE REAL,
+        NOTES TEXT,
+        FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER(ID)
+      );
+    `);
 
- CHEST REAL,
-WAIST REAL,
-QAMEEZ_LENGTH REAL,
-SHIRT_LENGTH REAL,
-SHALWAR_LENGTH REAL,
-TROUSER_LENGTH REAL,
-SLEEVE REAL,
-DAMAN REAL,
+    console.log("MEASUREMENTS table created successfully");
 
-HIP REAL,
-THIGH REAL,
-BOTTOM REAL,
-
-SHOULDER REAL,
-COLLAR REAL,
-LENGTH REAL,
-
-NOTES TEXT,
-    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER(ID)
-  );
-`);
-
-console.log("MEASUREMENTS table created successfully");
-}
-catch(error){
-  console.log("Failed to create Measurement table")
-}
+  } catch (error) {
+    console.log("Failed to create Measurement table:", error);
+  }
 }
 
-// export async function dropMeasurementTable() {
-//   try {
-//     const db = await databaseConnection();
+export async function dropMeasurementTable() {
+  try {
+    const db = await databaseConnection();
 
-//     await db.execAsync(`
-//       DROP TABLE IF EXISTS MEASUREMENTS;
-//     `);
+    await db.execAsync(`
+      DROP TABLE IF EXISTS MEASUREMENTS;
+    `);
 
-//     console.log("MEASUREMENTS table dropped successfully");
-//   } catch (error) {
-//     console.log("Failed to drop MEASUREMENTS table:", error);
-//   }
-// }
+    console.log("MEASUREMENTS table dropped successfully");
+  } catch (error) {
+    console.log("Failed to drop MEASUREMENTS table:", error);
+  }
+}
 export async function getCurrentUserDetail(){
  const  db=await databaseConnection();
  try{

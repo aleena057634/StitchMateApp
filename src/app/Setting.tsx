@@ -8,11 +8,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { requestNotificationPermission } from "../utils/notification";
-
 import ThemeContext from "../context/ThemeContext";
 import CustomAlert, { ConfirmAlert } from "@/componenets/CustomAlert";
-
+import AudioComponent from "@/componenets/AudioComponent";
+import {
+  requestNotificationPermission,scheduleTestNotification
+} from "../utils/notification"
 export default function Setting() {
   const { theme, isDark, toggleTheme } = useContext(ThemeContext);
 const [showAlert, setShowAlert]=useState(false);

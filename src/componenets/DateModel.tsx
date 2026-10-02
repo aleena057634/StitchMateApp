@@ -5,15 +5,23 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import ThemeContext from "@/context/ThemeContext";
 
-export default function DateModel({date,setDate, minimumDate,}: any) {
+export default function DateModel({
+  date,
+  setDate,
+  minimumDate,
+  disabled = false,
+}: any) {
   const { theme } = useContext(ThemeContext);
   const [openCalendar, setOpenCalendar] = useState(false);
 
   return (
     <View>
       <TouchableOpacity
+        disabled={disabled}
         onPress={() => {
-          setOpenCalendar(!openCalendar);
+          if (!disabled) {
+            setOpenCalendar(!openCalendar);
+          }
         }}
         style={{
           height: 50,
@@ -24,7 +32,10 @@ export default function DateModel({date,setDate, minimumDate,}: any) {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          backgroundColor: theme.inputBackground,
+          backgroundColor: disabled
+            ? theme.border
+            : theme.inputBackground,
+          opacity: disabled ? 0.7 : 1,
         }}
       >
         <Text
@@ -37,17 +48,13 @@ export default function DateModel({date,setDate, minimumDate,}: any) {
         </Text>
 
         <Ionicons
-          name={
-            openCalendar
-              ? "chevron-up"
-              : "chevron-down"
-          }
+          name={openCalendar ? "chevron-up" : "chevron-down"}
           size={20}
-          color={theme.primary}
+          color={disabled ? theme.text : theme.primary}
         />
       </TouchableOpacity>
 
-      {openCalendar && (
+      {openCalendar && !disabled && (
         <DateTimePicker
           value={date}
           mode="date"

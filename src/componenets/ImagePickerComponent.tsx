@@ -7,12 +7,15 @@ import {
   Text,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type ImagePickerProps = {
   onImageSelected: (uri: string) => void;
 };
 
-export default function ImagePickerComponent({onImageSelected,}: ImagePickerProps) {
+export default function ImagePickerComponent({
+  onImageSelected,
+}: ImagePickerProps) {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   const pickFromGallery = async () => {
@@ -48,25 +51,52 @@ export default function ImagePickerComponent({onImageSelected,}: ImagePickerProp
     }
   };
 
+  const cancelImage = () => {
+    setImageUri(null);
+  };
+
   return (
     <View style={styles.container}>
-      <Pressable
-        style={styles.button}
-        onPress={pickFromGallery}
-      >
-        <Text style={styles.buttonText}>
-          Select From Gallery
-        </Text>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        {/* Cancel */}
+        <Pressable
+          style={styles.actionButton}
+          onPress={cancelImage}
+        >
+          <Ionicons
+            name="close"
+            size={20}
+            color="#555"
+          />
+          <Text style={styles.cancelText}>Cancel</Text>
+        </Pressable>
 
-      <Pressable
-        style={styles.button}
-        onPress={openCamera}
-      >
-        <Text style={styles.buttonText}>
-          Open Camera
-        </Text>
-      </Pressable>
+        {/* Gallery */}
+        <Pressable
+          style={styles.actionButton}
+          onPress={pickFromGallery}
+        >
+          <Ionicons
+            name="images-outline"
+            size={20}
+            color="#C9A227"
+          />
+          <Text style={styles.buttonText}>Gallery</Text>
+        </Pressable>
+
+        {/* Camera */}
+        <Pressable
+          style={styles.actionButton}
+          onPress={openCamera}
+        >
+          <Ionicons
+            name="camera-outline"
+            size={20}
+            color="#C9A227"
+          />
+          <Text style={styles.buttonText}>Camera</Text>
+        </Pressable>
+      </View>
 
       {imageUri && (
         <Image
@@ -80,25 +110,40 @@ export default function ImagePickerComponent({onImageSelected,}: ImagePickerProp
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     alignItems: "center",
   },
 
-  button: {
-    backgroundColor: "#034624",
-    borderRadius: 20,
-    padding: 12,
-    margin: 10,
+  buttonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 18,
+  },
+
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
   },
 
   buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "700",
+    color: "#C9A227",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  cancelText: {
+    color: "#777",
+    fontSize: 15,
+    fontWeight: "600",
   },
 
   image: {
     width: 200,
     height: 200,
-    marginTop: 20,
+    borderRadius: 12,
+    marginTop: 18,
   },
 });

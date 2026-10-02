@@ -510,3 +510,24 @@ export async function Partial_Payment(
     [newPaidAmount, newRemaining, orderId]
   );
 }
+
+export async function getCustomerName(customerId: number) {
+  try {
+    const db = await databaseConnection();
+
+    const customer = await db.getFirstAsync<{ NAME: string }>(
+      `
+      SELECT NAME
+      FROM CUSTOMER
+      WHERE ID = ?
+      `,
+      [customerId]
+    );
+
+    return customer?.NAME || "Unknown Customer";
+
+  } catch (error) {
+    console.log("Failed to get customer name:", error);
+    return "Unknown Customer";
+  }
+}

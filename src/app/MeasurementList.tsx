@@ -1,4 +1,3 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import {
   router,
@@ -28,7 +27,7 @@ export default function MeasurementList() {
   const { id } = useLocalSearchParams();
 
   const [showEditAlert, setShowEditAlert] = useState(false);
-const [editItem, setEditItem] = useState<any>(null);
+  const [editItem, setEditItem] = useState<any>(null);
 
   const [measurements, setMeasurements] = useState<any[]>([]);
 
@@ -53,80 +52,106 @@ const [editItem, setEditItem] = useState<any>(null);
   // ================= UPDATE =================
 
   const handleUpdate = (item: any) => {
-  setEditItem(item);
-  setShowEditAlert(true);
-};
+    setEditItem(item);
+    setShowEditAlert(true);
+  };
 
-const confirmUpdate = () => {
-  if (editItem) {
-    router.push({
-      pathname: "/MeasurementForm",
-      params: {
-        id: String(id),
-        type: String(editItem.TYPE),
-        measurementId: String(editItem.mEASUREMENT_ID),
+  const confirmUpdate = () => {
+    if (editItem) {
+      router.push({
+        pathname: "/MeasurementForm",
+        params: {
+          id: String(id),
+          type: String(editItem.TYPE),
+          measurementId: String(editItem.mEASUREMENT_ID),
 
-        Chest: editItem.CHEST != null ? String(editItem.CHEST) : "",
-        Waist: editItem.WAIST != null ? String(editItem.WAIST) : "",
-        Qameez_Length:
-          editItem.QAMEEZ_LENGTH != null
-            ? String(editItem.QAMEEZ_LENGTH)
-            : "",
-        Shirt_Length:
-          editItem.SHIRT_LENGTH != null
-            ? String(editItem.SHIRT_LENGTH)
-            : "",
-        Shalwar_Length:
-          editItem.SHALWAR_LENGTH != null
-            ? String(editItem.SHALWAR_LENGTH)
-            : "",
-        Trouser_Length:
-          editItem.TROUSER_LENGTH != null
-            ? String(editItem.TROUSER_LENGTH)
-            : "",
-        Sleeve:
-          editItem.SLEEVE != null
-            ? String(editItem.SLEEVE)
-            : "",
-        Daman:
-          editItem.DAMAN != null
-            ? String(editItem.DAMAN)
-            : "",
-        Hip:
-          editItem.HIP != null
-            ? String(editItem.HIP)
-            : "",
-        Thigh:
-          editItem.THIGH != null
-            ? String(editItem.THIGH)
-            : "",
-        Bottom:
-          editItem.BOTTOM != null
-            ? String(editItem.BOTTOM)
-            : "",
-        Shoulder:
-          editItem.SHOULDER != null
-            ? String(editItem.SHOULDER)
-            : "",
-        Collar:
-          editItem.COLLAR != null
-            ? String(editItem.COLLAR)
-            : "",
-        Length:
-          editItem.LENGTH != null
-            ? String(editItem.LENGTH)
-            : "",
-        Notes:
-          editItem.NOTES != null
-            ? String(editItem.NOTES)
-            : "",
-      },
-    });
+          Chest:
+            editItem.CHEST != null
+              ? String(editItem.CHEST)
+              : "",
 
-    setShowEditAlert(false);
-    setEditItem(null);
-  }
-};
+          Waist:
+            editItem.WAIST != null
+              ? String(editItem.WAIST)
+              : "",
+
+          Qameez_Length:
+            editItem.QAMEEZ_LENGTH != null
+              ? String(editItem.QAMEEZ_LENGTH)
+              : "",
+
+          Shirt_Length:
+            editItem.SHIRT_LENGTH != null
+              ? String(editItem.SHIRT_LENGTH)
+              : "",
+
+          Shalwar_Length:
+            editItem.SHALWAR_LENGTH != null
+              ? String(editItem.SHALWAR_LENGTH)
+              : "",
+
+          Trouser_Length:
+            editItem.TROUSER_LENGTH != null
+              ? String(editItem.TROUSER_LENGTH)
+              : "",
+
+          Sleeve:
+            editItem.SLEEVE != null
+              ? String(editItem.SLEEVE)
+              : "",
+
+          Daman:
+            editItem.DAMAN != null
+              ? String(editItem.DAMAN)
+              : "",
+
+          Hip:
+            editItem.HIP != null
+              ? String(editItem.HIP)
+              : "",
+
+          Thigh:
+            editItem.THIGH != null
+              ? String(editItem.THIGH)
+              : "",
+
+          Bottom:
+            editItem.BOTTOM != null
+              ? String(editItem.BOTTOM)
+              : "",
+
+          Shoulder:
+            editItem.SHOULDER != null
+              ? String(editItem.SHOULDER)
+              : "",
+
+          // ================= ARMHOLE =================
+          Armhole:
+            editItem.ARMHOLE != null
+              ? String(editItem.ARMHOLE)
+              : "",
+
+          Collar:
+            editItem.COLLAR != null
+              ? String(editItem.COLLAR)
+              : "",
+
+          Length:
+            editItem.LENGTH != null
+              ? String(editItem.LENGTH)
+              : "",
+
+          Notes:
+            editItem.NOTES != null
+              ? String(editItem.NOTES)
+              : "",
+        },
+      });
+
+      setShowEditAlert(false);
+      setEditItem(null);
+    }
+  };
 
   // ================= DELETE =================
 
@@ -349,6 +374,8 @@ const confirmUpdate = () => {
             />
 
             <View style={styles.measurements}>
+
+              {/* ================= CHEST ================= */}
               {item.CHEST != null && (
                 <View
                   style={[
@@ -380,6 +407,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= WAIST ================= */}
               {item.WAIST != null && (
                 <View
                   style={[
@@ -411,6 +439,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= QAMEEZ ================= */}
               {item.QAMEEZ_LENGTH != null && (
                 <View
                   style={[
@@ -442,6 +471,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= SHIRT ================= */}
               {item.SHIRT_LENGTH != null && (
                 <View
                   style={[
@@ -473,6 +503,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= SHALWAR ================= */}
               {item.SHALWAR_LENGTH != null && (
                 <View
                   style={[
@@ -504,6 +535,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= TROUSER ================= */}
               {item.TROUSER_LENGTH != null && (
                 <View
                   style={[
@@ -535,6 +567,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= SLEEVE ================= */}
               {item.SLEEVE != null && (
                 <View
                   style={[
@@ -566,6 +599,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= DAMAN ================= */}
               {item.DAMAN != null && (
                 <View
                   style={[
@@ -597,6 +631,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= LENGTH ================= */}
               {item.LENGTH != null && (
                 <View
                   style={[
@@ -628,6 +663,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= HIP ================= */}
               {item.HIP != null && (
                 <View
                   style={[
@@ -659,6 +695,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= THIGH ================= */}
               {item.THIGH != null && (
                 <View
                   style={[
@@ -690,6 +727,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= BOTTOM ================= */}
               {item.BOTTOM != null && (
                 <View
                   style={[
@@ -721,6 +759,7 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= SHOULDER ================= */}
               {item.SHOULDER != null && (
                 <View
                   style={[
@@ -752,6 +791,39 @@ const confirmUpdate = () => {
                 </View>
               )}
 
+              {/* ================= ARMHOLE ================= */}
+              {item.ARMHOLE != null && (
+                <View
+                  style={[
+                    styles.measureBox,
+                    {
+                      backgroundColor:
+                        theme.inputBackground,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.measureLabel,
+                      { color: theme.secondaryText },
+                    ]}
+                  >
+                    Armhole
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.measureValue,
+                      { color: theme.text },
+                    ]}
+                  >
+                    {item.ARMHOLE}
+                  </Text>
+                </View>
+              )}
+
+              {/* ================= COLLAR ================= */}
               {item.COLLAR != null && (
                 <View
                   style={[
@@ -784,6 +856,7 @@ const confirmUpdate = () => {
               )}
             </View>
 
+            {/* ================= NOTES ================= */}
             {item.NOTES && (
               <View
                 style={[
@@ -822,6 +895,7 @@ const confirmUpdate = () => {
         )}
       />
 
+      {/* ================= DELETE ALERT ================= */}
       <CustomAlert
         visible={ShowAlert}
         title="Delete Measurement"
@@ -833,6 +907,7 @@ const confirmUpdate = () => {
         onConfirm={confirmDelete}
       />
 
+      {/* ================= ADD BUTTON ================= */}
       <FloatingButton
         onPress={() => {
           router.push({
@@ -843,16 +918,18 @@ const confirmUpdate = () => {
           });
         }}
       />
+
+      {/* ================= EDIT ALERT ================= */}
       <CustomAlert
-  visible={showEditAlert}
-  title="Edit Measurement"
-  Message="Are you sure you want to edit this measurement?"
-  onCancel={() => {
-    setShowEditAlert(false);
-    setEditItem(null);
-  }}
-  onConfirm={confirmUpdate}
-/>
+        visible={showEditAlert}
+        title="Edit Measurement"
+        Message="Are you sure you want to edit this measurement?"
+        onCancel={() => {
+          setShowEditAlert(false);
+          setEditItem(null);
+        }}
+        onConfirm={confirmUpdate}
+      />
     </View>
   );
 }

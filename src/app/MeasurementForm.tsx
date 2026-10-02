@@ -1,4 +1,3 @@
-
 import { router, useLocalSearchParams } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import {
@@ -11,7 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-
+import { ActivityIndicator } from "react-native";
 import ThemeContext from "@/context/ThemeContext";
 
 import {
@@ -23,7 +22,6 @@ import { ConfirmAlert } from "../componenets/CustomAlert";
 
 export default function MeasurementForm() {
   const { theme } = useContext(ThemeContext);
-
   const params = useLocalSearchParams();
 
   const id = params.id;
@@ -44,6 +42,7 @@ export default function MeasurementForm() {
   const Shoulder = params.Shoulder;
   const Collar = params.Collar;
   const Length = params.Length;
+  const Armhole = params.Armhole;
   const Notes = params.Notes;
 
   const [measurement, setMeasurement] = useState({
@@ -61,11 +60,15 @@ export default function MeasurementForm() {
     Shoulder: "",
     Collar: "",
     Length: "",
+    Armhole: "",
     Notes: "",
   });
 
   const [showAlert, setShowAlert] = useState(false);
-
+  const [showLoader, setShowLoader] = useState(false);
+function takeFirstLetter(type: string) {
+  return type.charAt(0);
+}
   useEffect(() => {
     if (measurementId) {
       setMeasurement({
@@ -83,6 +86,7 @@ export default function MeasurementForm() {
         Shoulder: Shoulder?.toString() || "",
         Collar: Collar?.toString() || "",
         Length: Length?.toString() || "",
+        Armhole: Armhole?.toString() || "",
         Notes: Notes?.toString() || "",
       });
     }
@@ -93,28 +97,75 @@ export default function MeasurementForm() {
     field: keyof typeof measurement
   ) {
     return (
-      <TextInput
-        placeholder={placeholder}
-        inputMode={field === "Notes" ? "text" : "numeric"}
-        placeholderTextColor={theme.placeholder}
+      <View style={styles.field}>
+        <Text
+          style={[
+            styles.label,
+            {
+              color: theme.text,
+            },
+          ]}
+        >
+          {placeholder}
+        </Text>
+
+        <TextInput
+          placeholder={placeholder}
+          inputMode={field === "Notes" ? "text" : "numeric"}
+          placeholderTextColor={theme.placeholder}
+          style={[
+            styles.input,
+            field === "Notes" && styles.notes,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+              color: theme.text,
+            },
+          ]}
+          value={measurement[field]}
+          onChangeText={(value) =>
+            setMeasurement({
+              ...measurement,
+              [field]: value,
+            })
+          }
+          multiline={field === "Notes"}
+        />
+      </View>
+    );
+  }
+
+  function SectionTitle({ title }: { title: string }) {
+    return (
+      <View
         style={[
-          styles.input,
-          field === "Notes" && styles.notes,
+          styles.sectionHeader,
           {
             backgroundColor: theme.inputBackground,
             borderColor: theme.border,
-            color: theme.text,
           },
         ]}
-        value={measurement[field]}
-        onChangeText={(value) =>
-          setMeasurement({
-            ...measurement,
-            [field]: value,
-          })
-        }
-        multiline={field === "Notes"}
-      />
+      >
+        <View
+          style={[
+            styles.sectionDot,
+            {
+              backgroundColor: theme.primary,
+            },
+          ]}
+        />
+
+        <Text
+          style={[
+            styles.sectionTitle,
+            {
+              color: theme.text,
+            },
+          ]}
+        >
+          {title}
+        </Text>
+      </View>
     );
   }
 
@@ -123,10 +174,15 @@ export default function MeasurementForm() {
       if (
         !measurement.Chest ||
         !measurement.Waist ||
-        !measurement.Qameez_Length ||
-        !measurement.Shalwar_Length ||
+        !measurement.Shoulder ||
         !measurement.Sleeve ||
-        !measurement.Daman
+        !measurement.Qameez_Length ||
+        !measurement.Daman ||
+        !measurement.Collar ||
+        !measurement.Armhole ||
+        !measurement.Shalwar_Length ||
+        !measurement.Thigh ||
+        !measurement.Bottom
       ) {
         setShowAlert(true);
         return false;
@@ -136,11 +192,17 @@ export default function MeasurementForm() {
     if (type === "Female Shalwar Kameez") {
       if (
         !measurement.Chest ||
+        !measurement.Shoulder ||
         !measurement.Waist ||
+        !measurement.Hip ||
         !measurement.Qameez_Length ||
-        !measurement.Shalwar_Length ||
         !measurement.Sleeve ||
-        !measurement.Daman
+        !measurement.Armhole ||
+        !measurement.Daman ||
+        !measurement.Collar ||
+        !measurement.Shalwar_Length ||
+        !measurement.Thigh ||
+        !measurement.Bottom
       ) {
         setShowAlert(true);
         return false;
@@ -179,7 +241,10 @@ export default function MeasurementForm() {
         !measurement.Waist ||
         !measurement.Shoulder ||
         !measurement.Sleeve ||
-        !measurement.Length
+        !measurement.Length ||
+        !measurement.Armhole ||
+        !measurement.Hip ||
+        !measurement.Collar
       ) {
         setShowAlert(true);
         return false;
@@ -189,33 +254,35 @@ export default function MeasurementForm() {
     return true;
   }
 
-  async function saveMeasurement() {
-    const isValid = validateMeasurement();
+async function saveMeasurement() {
+  const isValid = validateMeasurement();
 
-    if (!isValid) {
-      return;
-    }
-
-    if (measurementId) {
-      const result = await updateMeasurement(
-        Number(measurementId),
-        measurement
-      );
-
-      console.log("Update result:", result);
-    } else {
-      const result = await addMeasurement(
-        Number(id),
-        type?.toString() || "",
-        measurement
-      );
-
-      console.log("Add result:", result);
-    }
-
-    router.dismiss(2);
+  if (!isValid) {
+    return;
   }
 
+  setShowLoader(true);
+
+  if (measurementId) {
+    const result = await updateMeasurement(
+      Number(measurementId),
+      measurement
+    );
+
+    console.log("Update result:", result);
+  } else {
+    const result = await addMeasurement(
+      Number(id),
+      type?.toString() || "",
+      measurement
+    );
+
+    console.log("Add result:", result);
+  }
+
+  setShowLoader(false);
+  router.dismiss(2);
+}
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -224,100 +291,266 @@ export default function MeasurementForm() {
       <ScrollView
         style={[
           styles.scrollView,
-          { backgroundColor: theme.background },
+          {
+            backgroundColor: theme.background,
+          },
         ]}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <Text
-          style={[
-            styles.title,
-            { color: theme.text },
-          ]}
-        >
-          {type}
-        </Text>
+        {/* Header */}
 
-        <Text
+        <View
           style={[
-            styles.customer,
-            { color: theme.secondaryText },
+            styles.headerCard,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+            },
           ]}
         >
-          Customer ID: {id}
-        </Text>
+          <View style={styles.headerTop}>
+            <View
+              style={[
+                styles.headerIcon,
+                {
+                  backgroundColor: theme.primary,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.headerIconText,
+                  {
+                    color: theme.white,
+                  },
+                ]}
+              >
+            {takeFirstLetter(type ?.toString() || "")}
+              </Text>
+             
+            </View>
+
+            <View style={styles.headerInfo}>
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    color: theme.text,
+                  },
+                ]}
+              >
+                {type}
+              </Text>
+
+              <Text
+                style={[
+                  styles.customer,
+                  {
+                    color: theme.secondaryText,
+                  },
+                ]}
+              >
+                Customer ID: {id}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Male Shalwar Kameez */}
 
         {type === "Male Shalwar Kameez" && (
           <View>
-            {Input("Chest", "Chest")}
-            {Input("Waist", "Waist")}
-            {Input("Qameez Length", "Qameez_Length")}
-            {Input("Shalwar Length", "Shalwar_Length")}
-            {Input("Sleeve", "Sleeve")}
-            {Input("Daman", "Daman")}
+            <SectionTitle title="Qameez Measurements" />
+
+            <View style={styles.row}>
+              {Input("Chest", "Chest")}
+              {Input("Waist", "Waist")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Shoulder", "Shoulder")}
+              {Input("Sleeve", "Sleeve")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Qameez Length", "Qameez_Length")}
+              {Input("Daman", "Daman")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Collar", "Collar")}
+              {Input("Armhole", "Armhole")}
+            </View>
+
+            <SectionTitle title="Shalwar Measurements" />
+
+            <View style={styles.row}>
+              {Input("Shalwar Length", "Shalwar_Length")}
+              {Input("Thigh", "Thigh")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Bottom", "Bottom")}
+              <View style={styles.emptyField} />
+            </View>
           </View>
         )}
+
+        {/* Female Shalwar Kameez */}
 
         {type === "Female Shalwar Kameez" && (
           <View>
-            {Input("Chest", "Chest")}
-            {Input("Waist", "Waist")}
-            {Input("Qameez Length", "Qameez_Length")}
-            {Input("Shalwar Length", "Shalwar_Length")}
-            {Input("Sleeve", "Sleeve")}
-            {Input("Daman", "Daman")}
+            <SectionTitle title="Qameez Measurements" />
+
+            <View style={styles.row}>
+              {Input("Chest", "Chest")}
+              {Input("Shoulder", "Shoulder")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Waist", "Waist")}
+              {Input("Hip", "Hip")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Qameez Length", "Qameez_Length")}
+              {Input("Sleeve", "Sleeve")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Armhole", "Armhole")}
+              {Input("Daman", "Daman")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Collar / Neck", "Collar")}
+              <View style={styles.emptyField} />
+            </View>
+
+            <SectionTitle title="Shalwar Measurements" />
+
+            <View style={styles.row}>
+              {Input("Shalwar Length", "Shalwar_Length")}
+              {Input("Thigh", "Thigh")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Bottom", "Bottom")}
+              <View style={styles.emptyField} />
+            </View>
           </View>
         )}
+
+        {/* Pant */}
 
         {type === "Pant" && (
           <View>
-            {Input("Waist", "Waist")}
-            {Input("Hip", "Hip")}
-            {Input("Thigh", "Thigh")}
-            {Input("Bottom", "Bottom")}
-            {Input("Length", "Length")}
+            <SectionTitle title="Pant Measurements" />
+
+            <View style={styles.row}>
+              {Input("Waist", "Waist")}
+              {Input("Hip", "Hip")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Thigh", "Thigh")}
+              {Input("Bottom", "Bottom")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Length", "Length")}
+              {Input("Trouser Length", "Trouser_Length")}
+            </View>
           </View>
         )}
+
+        {/* Shirt */}
 
         {type === "Shirt" && (
           <View>
-            {Input("Chest", "Chest")}
-            {Input("Shoulder", "Shoulder")}
-            {Input("Sleeve", "Sleeve")}
-            {Input("Collar", "Collar")}
-            {Input("Length", "Length")}
+            <SectionTitle title="Shirt Measurements" />
+
+            <View style={styles.row}>
+              {Input("Chest", "Chest")}
+              {Input("Shoulder", "Shoulder")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Sleeve", "Sleeve")}
+              {Input("Collar", "Collar")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Length", "Length")}
+              {Input("Shirt Length", "Shirt_Length")}
+            </View>
           </View>
         )}
+
+        {/* Coat */}
 
         {type === "Coat" && (
           <View>
-            {Input("Chest", "Chest")}
-            {Input("Waist", "Waist")}
-            {Input("Shoulder", "Shoulder")}
-            {Input("Sleeve", "Sleeve")}
-            {Input("Length", "Length")}
+            <SectionTitle title="Coat Measurements" />
+
+            <View style={styles.row}>
+              {Input("Chest", "Chest")}
+              {Input("Waist", "Waist")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Shoulder", "Shoulder")}
+              {Input("Sleeve", "Sleeve")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Length", "Length")}
+              {Input("Armhole", "Armhole")}
+            </View>
+
+            <View style={styles.row}>
+              {Input("Hip", "Hip")}
+              {Input("Collar", "Collar")}
+            </View>
           </View>
         )}
 
+        {/* Notes */}
+
+        <SectionTitle title="Additional Notes" />
+
         {Input("Notes", "Notes")}
 
-        <Pressable
-          style={[
-            styles.saveButton,
-            { backgroundColor: theme.primary },
-          ]}
-          onPress={saveMeasurement}
-        >
-          <Text
-            style={[
-              styles.saveButtonText,
-              { color: theme.white },
-            ]}
-          >
-            Save Measurement
-          </Text>
-        </Pressable>
-
+        {/* Save Button */}
+{showLoader ? (
+  <ActivityIndicator
+    size="large"
+    color={theme.primary}
+  />
+) : (
+  <Pressable
+    style={[
+      styles.saveButton,
+      {
+        backgroundColor: theme.primary,
+      },
+    ]}
+    onPress={saveMeasurement}
+  >
+    <Text
+      style={[
+        styles.saveButtonText,
+        {
+          color: theme.white,
+        },
+      ]}
+    >
+      Save Measurement
+    </Text>
+  </Pressable>
+)}
         <ConfirmAlert
           visible={showAlert}
           title="Error"
@@ -334,48 +567,135 @@ export default function MeasurementForm() {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+    padding:5,
   },
 
   container: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 50,
     flexGrow: 1,
   },
 
-  saveButton: {
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 10,
+  /* Header */
+
+  headerCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 4,
   },
 
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  headerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 11,
+  },
+
+  headerIconText: {
+    fontSize: 17,
+    fontWeight: "900",
+  },
+
+  headerInfo: {
+    flex: 1,
   },
 
   title: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "800",
-    marginBottom: 6,
+    marginBottom: 3,
   },
 
   customer: {
-    fontSize: 14,
-    marginBottom: 25,
+    fontSize: 12.5,
+    fontWeight: "500",
+  },
+
+  /* Section */
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    height: 42,
+    borderWidth: 2,
+    borderRadius: 10,
+    marginTop: 14,
+    marginBottom: 12,
+  },
+
+  sectionDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginRight: 9,
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  /* Fields */
+
+  row: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  field: {
+    flex: 1,
+    marginBottom: 4,
+  },
+
+  label: {
+    fontSize: 14.5,
+    fontWeight: "900",
+    marginBottom: 5,
   },
 
   input: {
+    height: 46,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 12,
-    fontSize: 15,
+    borderRadius: 11,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 10,
   },
 
   notes: {
     height: 100,
     textAlignVertical: "top",
+    paddingTop: 12,
+  },
+
+  emptyField: {
+    flex: 1,
+  },
+
+  /* Save Button */
+
+  saveButton: {
+    borderRadius: 30,
+    minHeight: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    marginStart:20,
+     marginEnd:20,
+  },
+
+  saveButtonText: {
+    fontSize: 17,
+    fontWeight: "800",
   },
 });

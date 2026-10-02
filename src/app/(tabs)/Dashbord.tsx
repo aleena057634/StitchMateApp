@@ -19,12 +19,14 @@ import {
 } from "../../../databse/table";
 import { TotalOrders, getUrgentOrders } from "../../../databse/order";
 import ThemeContext from "../../context/ThemeContext";
+
 import {
   ProfileImage,
   saveProfileImage,
   getProfileImage,
 } from "../../../databse/ImageCrud";
-import { ProfileImageModal } from "@/componenets/CustomAlert";
+
+import { ProfileImageModal } from "../../componenets/CustomAlert";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Dashboard() {
@@ -34,7 +36,6 @@ export default function Dashboard() {
   const [Name, setName] = useState("");
   const [TotalOrder, setTotalOrder] = useState(0);
   const [orders, setOrders] = useState<any[]>([]);
-  const [animatedOrder, setAnimatedOrder] = useState(0);
   const [ImageAlert, showImageAlert] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -56,14 +57,15 @@ export default function Dashboard() {
   };
 
   const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permission.granted) {
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
-       allowsEditing: true,
+      allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
@@ -85,20 +87,24 @@ export default function Dashboard() {
       console.log("Failed to load urgent orders:", error);
     }
   };
-  
-   const loadCustomers = async () => {
-      const count = await getTotalCustomers();
-      setTotalCustomers(count);
-    };
-  
+
+  const loadCustomers = async () => {
+    const count = await getTotalCustomers();
+    setTotalCustomers(count);
+  };
+
+  const loadOrders = async () => {
+    const count = await TotalOrders();
+    setTotalOrder(count);
+  };
 
   useFocusEffect(
     useCallback(() => {
       UrgentOrder();
       loadCustomers();
+      loadOrders();
     }, [])
   );
-  
 
   useEffect(() => {
     Measurement_table();
@@ -108,17 +114,6 @@ export default function Dashboard() {
       const username = await getCustomerName();
       setName(username || "");
     };
-
-    const loadCustomers = async () => {
-      const count = await getTotalCustomers();
-      setTotalCustomers(count);
-    };
-  
-    const loadOrders = async () => {
-      const count = await TotalOrders();
-      setTotalOrder(count);
-
-         };
 
     const LoadProfileImage = async () => {
       const image = await getProfileImage();
@@ -133,17 +128,18 @@ export default function Dashboard() {
 
   return (
     <SafeAreaView
-  edges={[]}
-  style={[
-    styles.container,
-    { backgroundColor: theme.background },
-  ]}
->
+      edges={[]}
+      style={[
+        styles.container,
+        { backgroundColor: theme.background },
+      ]}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
         {/* HEADER */}
+
         <View style={styles.header}>
           <View style={styles.userSection}>
             <View
@@ -191,38 +187,26 @@ export default function Dashboard() {
                 </Pressable>
               </View>
             </View>
-{/* <View>
-  <Text
-    style={[
-     
-      { color: theme.secondaryText },
-    ]}
-  >
-    Welcome back, {Name || "Tailor"}
-  </Text>
 
-  <Text
-    style={[
-      styles.name,
-      {
-        color: theme.text,
-        fontFamily: "serif",
-        fontWeight: "bold",
-      },
-    ]}
-  >
-    Let's get stitching!
-  </Text>
-</View> */}
-<View style={{ marginStart: 10 }}>
-  <Text style={{ fontStyle: "italic", color: theme.text }}>
-    Welcome back,
-  </Text>
+            <View style={{ marginStart: 10 }}>
+              <Text
+                style={{
+                  fontStyle: "italic",
+                  color: theme.text,
+                }}
+              >
+                Welcome back,
+              </Text>
 
-  <Text style={{ fontFamily: "serif", color: theme.text }}>
-    {Name || "Tailor"}
-  </Text>
-</View>
+              <Text
+                style={{
+                  fontFamily: "serif",
+                  color: theme.text,
+                }}
+              >
+                {Name || "Tailor"}
+              </Text>
+            </View>
           </View>
 
           <TouchableOpacity
@@ -233,7 +217,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/Setting")}
+            onPress={() => router.navigate("/Setting")}
           >
             <Ionicons
               name="settings-outline"
@@ -244,6 +228,7 @@ export default function Dashboard() {
         </View>
 
         {/* FLOW OF ORDERS */}
+
         <View
           style={[
             styles.flowCard,
@@ -286,7 +271,7 @@ export default function Dashboard() {
                   { color: theme.white },
                 ]}
               >
-                {animatedOrder}
+                {TotalOrder}
               </Text>
 
               <Text
@@ -413,7 +398,7 @@ export default function Dashboard() {
                 backgroundColor: theme.background,
               },
             ]}
-            onPress={() => router.push("/OrderList")}
+            onPress={() => router.replace("/OrderList")}
           >
             <Text
               style={[
@@ -433,6 +418,7 @@ export default function Dashboard() {
         </View>
 
         {/* QUICK ACTIONS */}
+
         <View style={styles.sectionHeader}>
           <View>
             <Text
@@ -457,6 +443,7 @@ export default function Dashboard() {
 
         <View style={styles.actionGrid}>
           {/* ADD CUSTOMER */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -465,7 +452,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/AddCustomers")}
+            onPress={() => router.navigate("/AddCustomers")}
           >
             <View
               style={[
@@ -491,6 +478,7 @@ export default function Dashboard() {
           </Pressable>
 
           {/* ADD ORDER */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -499,7 +487,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/AddOrder")}
+            onPress={() => router.navigate("/AddOrder")}
           >
             <View
               style={[
@@ -525,6 +513,7 @@ export default function Dashboard() {
           </Pressable>
 
           {/* PAYMENT */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -533,7 +522,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/Payment")}
+            onPress={() => router.navigate("/Payment")}
           >
             <View
               style={[
@@ -559,6 +548,7 @@ export default function Dashboard() {
           </Pressable>
 
           {/* CUSTOMERS */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -567,7 +557,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/CustomerList")}
+            onPress={() => router.navigate("/CustomerList")}
           >
             <View
               style={[
@@ -602,6 +592,7 @@ export default function Dashboard() {
           </Pressable>
 
           {/* ORDERS */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -610,7 +601,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/OrderList")}
+            onPress={() => router.navigate("/OrderList")}
           >
             <View
               style={[
@@ -645,6 +636,7 @@ export default function Dashboard() {
           </Pressable>
 
           {/* URGENT */}
+
           <Pressable
             style={[
               styles.actionCard,
@@ -653,7 +645,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.push("/OrderList")}
+            onPress={() => router.navigate("/OrderList")}
           >
             <View
               style={[
@@ -689,6 +681,7 @@ export default function Dashboard() {
         </View>
 
         {/* URGENT ORDERS */}
+
         {orders.length > 0 && (
           <>
             <View style={styles.sectionHeader}>
@@ -713,7 +706,7 @@ export default function Dashboard() {
               </View>
 
               <TouchableOpacity
-                onPress={() => router.push("/OrderList")}
+                onPress={() => router.navigate("/OrderList")}
               >
                 <Text
                   style={[
@@ -740,7 +733,7 @@ export default function Dashboard() {
                   router.push({
                     pathname: "/OrderDetaail",
                     params: {
-                      orderId: order.ORDER_ID,
+                      orderId: order.ORDER_ID.toString(),
                     },
                   })
                 }
@@ -826,18 +819,10 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding:20,
+    padding: 20,
   },
-// greeting: {
-//   fontSize: 14,
-//   fontWeight: "500",
-//   marginBottom: 2,
-// },
-  scrollContainer: {
-    // paddingHorizontal: 18,
-    // paddingTop: 8,
-    // paddingBottom: 40,
-  },
+
+  scrollContainer: {},
 
   header: {
     flexDirection: "row",
@@ -1100,4 +1085,4 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "700",
   },
-});                     
+});

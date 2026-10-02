@@ -23,10 +23,14 @@ import CustomAlert, {
   ProfileImageModal,
 } from "@/componenets/CustomAlert";
 import { addOrderImage } from "../../databse/ImageCrud";
-
+import AudioComponent from "@/componenets/AudioComponent";
+import { add_Audio } from "../../databse/Audio";
+ 
+import { Payment_Value } from "../../databse/payment";
+import { showOrderNotification,showPaymentNotification } from "@/utils/notification";
 export default function OrderScreen() {
   const { theme, isDark, toggleTheme } = useContext(ThemeContext);
-
+const [audios, setAudios] = useState<string[]>([]);
   const [orderName, setOrderName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [loader, setLoader] = useState(false);
@@ -222,10 +226,31 @@ export default function OrderScreen() {
       );
 
       const orderId = result.lastInsertRowId;
-
+await showOrderNotification();
       for (const image of orderImages) {
         await addOrderImage(image, orderId);
       }
+      
+    if (Number(advancePayment) > 0) {
+  const paymentDate = new Date().toISOString().split("T")[0];
+
+  await Payment_Value(
+    Number(orderId),
+    Number(advancePayment),
+    paymentDate
+  );
+
+  await showPaymentNotification(
+    Number(orderId),
+    orderName,
+    selectedCustomer.NAME,
+    Number(advancePayment)
+  );
+}
+for (const audio of audios) {
+  await add_Audio(orderId, audio);
+  
+}
 
       ToastAndroid.show(
         "Order added successfully",
@@ -523,6 +548,7 @@ export default function OrderScreen() {
         <DateModel
           date={arrivalDate}
           setDate={setArrivalDate}
+           disabled={true}
         />
 
         <Text
@@ -1047,11 +1073,7 @@ export default function OrderScreen() {
             Add Design Image
           </Text>
 
-          <Ionicons
-            name="add-circle-outline"
-            size={24}
-            color={theme.primary}
-          />
+        
         </Pressable>
 
         {orderImages.length > 0 && (
@@ -1089,7 +1111,20 @@ export default function OrderScreen() {
           </View>
         )}
       </View>
-
+<AudioComponent
+  audios={audios}
+  onAudioRecorded={(uri) => {
+    setAudios((prev) => [
+      uri,
+      ...prev,
+    ]);
+  }}
+  onAudioDelete={(uri) => {
+    setAudios((prev) =>
+      prev.filter((item) => item !== uri)
+    );
+  }}
+/>
       {/* CREATE ORDER */}
       {loader ? (
         <ActivityIndicator
@@ -1243,6 +1278,8 @@ export default function OrderScreen() {
           setImageAlert(false);
         }}
       />
+  
+
     </ScrollView>
   );
 }

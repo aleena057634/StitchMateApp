@@ -1,11 +1,9 @@
-
 import {
   Text,
   View,
   StyleSheet,
   FlatList,
   Pressable,
-  Alert,
 } from "react-native";
 
 import ThemeContext from "@/context/ThemeContext";
@@ -27,9 +25,10 @@ export default function Payment() {
 
   const [payments, setPayments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
- 
- const [showAlert,setAlert]  =useState(false);
-  const [IshowAlert,IsetAlert]  =useState(false);
+
+  const [showAlert, setAlert] = useState(false);
+  const [IshowAlert, IsetAlert] = useState(false);
+
   const filteredPayments = payments.filter((item) =>
     JSON.stringify(item)
       .toLowerCase()
@@ -44,17 +43,16 @@ export default function Payment() {
 
   const getPayments = async () => {
     const data = await Payment_Show();
-
     setPayments(data);
   };
 
   const handleClearHistory = () => {
     if (payments.length === 0) {
-     IsetAlert(true)
+      IsetAlert(true);
       return;
     }
 
-   setAlert(true)
+    setAlert(true);
   };
 
   return (
@@ -64,15 +62,27 @@ export default function Payment() {
         { backgroundColor: theme.background },
       ]}
     >
+      {/* Header */}
       <View style={styles.header}>
-        <Text
-          style={[
-            styles.title,
-            { color: theme.text },
-          ]}
-        >
-          Payment History
-        </Text>
+        <View>
+          <Text
+            style={[
+              styles.title,
+              { color: theme.text },
+            ]}
+          >
+            Payment History
+          </Text>
+
+          <Text
+            style={[
+              styles.subtitle,
+              { color: theme.secondaryText },
+            ]}
+          >
+            Track all your payments
+          </Text>
+        </View>
 
         <Pressable
           onPress={handleClearHistory}
@@ -95,15 +105,25 @@ export default function Payment() {
         </Pressable>
       </View>
 
-      <SearchBar
-        value={search}
-        onChangeText={setSearch}
-      />
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
 
+      {/* Payment List */}
       <FlatList
         data={filteredPayments}
         keyExtractor={(item) =>
           String(item.PAYMENT_ID)
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={
+          filteredPayments.length === 0
+            ? styles.emptyList
+            : styles.list
         }
         renderItem={({ item }) => (
           <View
@@ -115,8 +135,10 @@ export default function Payment() {
               },
             ]}
           >
-            <View>
+            {/* Left Side */}
+            <View style={styles.leftContent}>
               <Text
+                numberOfLines={1}
                 style={[
                   styles.orderName,
                   { color: theme.text },
@@ -144,37 +166,83 @@ export default function Payment() {
               </Text>
             </View>
 
-            <Text
+            {/* Right Side */}
+            <View
               style={[
-                styles.amount,
-                { color: theme.primary },
+                styles.amountBox,
+                {
+                  backgroundColor: theme.inputBackground,
+                  borderColor: theme.border,
+                },
               ]}
             >
-              Rs. {item.PAYMENT_AMOUNT}
-            </Text>
+              <Text
+                style={[
+                  styles.amountLabel,
+                  { color: theme.secondaryText },
+                ]}
+              >
+                Payment
+              </Text>
+
+              <Text
+                style={[
+                  styles.amount,
+                  { color: theme.primary },
+                ]}
+              >
+                Rs. {item.PAYMENT_AMOUNT}
+              </Text>
+            </View>
           </View>
         )}
-      />
-<ConfirmAlert
-visible={IshowAlert}
-title="Payment History, "
-Message="There is no Payment History"
-onConfirm={()=>{
-  IsetAlert(false)
-}}
-/>
-<CustomAlert
-visible={showAlert}
-title="Clear Payment History,"
-Message="Are You sure You want Peranntly delete Payemt history?"
-onCancel={()=>{setAlert(false)}}
-onConfirm={async () => {
-            await ClearPaymentHistory();
-            setPayments([]);
-            setAlert(false);
-          }}
-/>
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text
+              style={[
+                styles.emptyTitle,
+                { color: theme.text },
+              ]}
+            >
+              No Payments Found
+            </Text>
 
+            <Text
+              style={[
+                styles.emptyText,
+                { color: theme.secondaryText },
+              ]}
+            >
+              Payment history will appear here.
+            </Text>
+          </View>
+        }
+      />
+
+      {/* No History Alert */}
+      <ConfirmAlert
+        visible={IshowAlert}
+        title="Payment History"
+        Message="There is no Payment History"
+        onConfirm={() => {
+          IsetAlert(false);
+        }}
+      />
+
+      {/* Clear History Alert */}
+      <CustomAlert
+        visible={showAlert}
+        title="Clear Payment History"
+        Message="Are you sure you want to permanently delete payment history?"
+        onCancel={() => {
+          setAlert(false);
+        }}
+        onConfirm={async () => {
+          await ClearPaymentHistory();
+          setPayments([]);
+          setAlert(false);
+        }}
+      />
     </View>
   );
 }
@@ -182,25 +250,31 @@ onConfirm={async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 18,
   },
 
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 16,
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: "700",
   },
 
+  subtitle: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+
   clearButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 9,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderRadius: 10,
     borderWidth: 1,
   },
 
@@ -209,24 +283,38 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  searchContainer: {
+    marginBottom: 14,
+  },
+
+  list: {
+    paddingBottom: 20,
+  },
+
   card: {
+    minHeight: 90,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 11,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
 
+  leftContent: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
   orderName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
+    marginBottom: 5,
   },
 
   orderId: {
     fontSize: 12,
-    marginTop: 4,
   },
 
   date: {
@@ -234,9 +322,42 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+  amountBox: {
+    minWidth: 105,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+
+  amountLabel: {
+    fontSize: 10,
+    marginBottom: 3,
+  },
+
   amount: {
     fontSize: 15,
     fontWeight: "700",
   },
-});
 
+  emptyList: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    paddingBottom: 80,
+  },
+
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+  },
+
+  emptyText: {
+    fontSize: 12,
+    marginTop: 6,
+  },
+});

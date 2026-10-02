@@ -19,7 +19,12 @@ import {
   deleteOrderImage,
   Update_OrderImage,
 } from "../../databse/ImageCrud";
+import { get_Audios } from "../../databse/Audio";
+import AudioComponent, {
 
+} from "../componenets/AudioComponent";
+import {showSimplePaymentNotification} from "../utils/notification"
+import { AudioPlayerItem } from "../componenets/AudioComponent";
 import {
   Mark,
   Order_detail,
@@ -40,7 +45,7 @@ export default function OrderDetail() {
   const { orderId } = useLocalSearchParams();
 
   const { theme } = useContext(ThemeContext);
-
+const [orderAudios, setOrderAudios] = useState<any[]>([]);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [partialAmount, setPartialAmount] = useState("");
@@ -71,6 +76,23 @@ export default function OrderDetail() {
   const [statusConfirmAlert, setStatusConfirmAlert] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
 
+  const loadOrderAudios = async () => {
+  try {
+    const audios = await get_Audios(Number(orderId));
+
+    console.log("ORDER AUDIOS:", audios);
+
+    setOrderAudios(audios);
+  } catch (error) {
+    console.log("Failed to load audios:", error);
+  }
+};
+
+useEffect(() => {
+  loadOrderImages();
+  loadOrderAudios();
+}, [orderId]);
+
   const loadOrderImages = async () => {
     try {
       const images = await getOrderImage(Number(orderId));
@@ -87,6 +109,7 @@ export default function OrderDetail() {
   useEffect(() => {
     loadOrderImages();
   }, [orderId]);
+
 
   // const updateOrderImage = async (newImageUri: string) => {
   //   try {
@@ -145,7 +168,11 @@ export default function OrderDetail() {
       Number(orderId),
       paymentAmount
     );
+await showSimplePaymentNotification(
+  Number(orderId),
+  paymentAmount
 
+)
     setPartialAmount("");
     setPartialConfirmAlert(false);
 
@@ -154,6 +181,10 @@ export default function OrderDetail() {
 
   const onConfirm = async () => {
     await Mark(Number(orderId));
+    
+    await showSimplePaymentNotification(
+  Number(orderId),
+  paymentAmount);
     await loadOrderDetail();
     router.replace("/Payment");
   };
@@ -692,6 +723,30 @@ export default function OrderDetail() {
     </View>
   </>
 )}
+{orderAudios.length > 0 && (
+  <>
+    <Text style={styles.sectionTitle}>
+      Order Audio
+    </Text>
+
+    <View style={styles.audioCard}>
+     <View style={styles.audioCard}>
+  {orderAudios.map((audio, index) => (
+    <View
+      key={audio.AUDIO_ID}
+      style={index > 0 ? { marginTop: 10 } : undefined}
+    >
+      <AudioPlayerItem
+        uri={audio.AUDIO_URI}
+        index={index}
+      />
+    </View>
+  ))}
+</View>
+    </View>
+  </>
+)}
+
       {/* ------------------------------------------------------------------------------------------ */}
       {/* Delete Image Alert */}
 
@@ -1130,7 +1185,14 @@ const createStyles = (theme: any) =>
       backgroundColor: theme.inputBackground,
       borderColor: theme.border,
     },
-
+audioCard: {
+  borderRadius: 16,
+  padding: 10,
+  borderWidth: 1,
+  backgroundColor: theme.card,
+  borderColor: theme.border,
+  marginBottom: 15,
+},
     partialTitle: {
       fontSize: 13,
       fontWeight: "700",
