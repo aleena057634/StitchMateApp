@@ -1,10 +1,6 @@
-
 import { Ionicons } from "@expo/vector-icons";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import { Link, router } from "expo-router";
-
+import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 
 import {
@@ -28,12 +24,13 @@ import {
 } from "../../databse/queries";
 
 import { userTable } from "../../databse/table";
-
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 
 export default function SignUp() {
   const { theme } = useContext(ThemeContext);
-const [Alert, showAlert]=useState(false);
+
+  const [Alert, showAlert] = useState(false);
+
   const [Username, setName] = useState("");
   const [UserEmail, setEmail] = useState("");
   const [UserPas, setPas] = useState("");
@@ -80,7 +77,7 @@ const [Alert, showAlert]=useState(false);
       return false;
     }
 
-   const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
 
     if (!emailPattern.test(email.trim())) {
       setEmailErro("Invalid email");
@@ -131,50 +128,55 @@ const [Alert, showAlert]=useState(false);
   }
 
   async function handlebutton() {
-  const email = UserEmail.trim();
+    const email = UserEmail.trim();
 
-  if (!Username.trim() || !email || !UserPas.trim() || !UserPhone.trim()) {
-    showAlert(true);
-    return;
+    if (
+      !Username.trim() ||
+      !email ||
+      !UserPas.trim() ||
+      !UserPhone.trim()
+    ) {
+      showAlert(true);
+      return;
+    }
+
+    const validname = validName(Username);
+    const validemail = validEmail(UserEmail);
+    const validPhone = validphone(UserPhone);
+    const validpass = validPass(UserPas);
+
+    if (!validname || !validemail || !validPhone || !validpass) {
+      return;
+    }
+
+    const existEmail = await checkEmail(email);
+
+    if (existEmail) {
+      setAlertEmail(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const newUser_id = await adduser(
+        Username,
+        email,
+        UserPas,
+        UserPhone
+      );
+
+      await AsyncStorage.setItem(
+        "userId",
+        String(newUser_id)
+      );
+
+      router.replace("/Dashbord");
+    } catch (error) {
+      console.log("Signup failed:", error);
+      setLoading(false);
+    }
   }
-
-  const validname = validName(Username);
-  const validemail = validEmail(UserEmail);
-  const validPhone = validphone(UserPhone);
-  const validpass = validPass(UserPas);
-
-  if (!validname || !validemail || !validPhone || !validpass) {
-    return;
-  }
-
-  const existEmail = await checkEmail(email);
-
-  if (existEmail) {
-    setAlertEmail(true);
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const newUser_id = await adduser(
-      Username,
-      email,
-      UserPas,
-      UserPhone
-    );
-
-    await AsyncStorage.setItem(
-      "userId",
-      String(newUser_id)
-    );
-
-    router.replace("/Dashbord");
-  } catch (error) {
-    console.log("Signup failed:", error);
-    setLoading(false);
-  }
-}
 
   const styles = createStyles(theme);
 
@@ -191,16 +193,22 @@ const [Alert, showAlert]=useState(false);
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.container}>
+
           <View style={styles.header}>
             <View
               style={[
                 styles.logoCircle,
                 {
-                  backgroundColor:
-                    theme.inputBackground,
+                  backgroundColor: theme.inputBackground,
                 },
               ]}
-            ></View>
+            >
+              <Ionicons
+                name="person-add-outline"
+                size={30}
+                color={theme.primary}
+              />
+            </View>
 
             <Text style={styles.title}>
               Create Account
@@ -212,6 +220,7 @@ const [Alert, showAlert]=useState(false);
           </View>
 
           <View style={styles.form}>
+
             <Text style={styles.label}>
               Name
             </Text>
@@ -228,8 +237,11 @@ const [Alert, showAlert]=useState(false);
                 value={Username}
                 onChangeText={(value) => {
                   setName(value);
-                  setNameErro("")
-                }} onBlur={()=>{validName(Username)}}
+                  setNameErro("");
+                }}
+                onBlur={() => {
+                  validName(Username);
+                }}
                 placeholder="Enter your name"
                 placeholderTextColor={theme.placeholder}
               />
@@ -257,12 +269,14 @@ const [Alert, showAlert]=useState(false);
                 value={UserEmail}
                 onChangeText={(value) => {
                   setEmail(value);
-              setEmailErro("");
-                }} onBlur={()=>{    validEmail(UserEmail)}}
+                  setEmailErro("");
+                }}
+                onBlur={() => {
+                  validEmail(UserEmail);
+                }}
                 placeholder="Enter your email"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="email-address"
-               
               />
             </View>
 
@@ -288,8 +302,11 @@ const [Alert, showAlert]=useState(false);
                 value={UserPhone}
                 onChangeText={(value) => {
                   setPhone(value);
-                  setPhoneErro("")
-                }} onBlur={()=>{validPass(UserPhone);}}
+                  setPhoneErro("");
+                }}
+                onBlur={() => {
+                  validphone(UserPhone);
+                }}
                 placeholder="03001234567"
                 placeholderTextColor={theme.placeholder}
                 keyboardType="phone-pad"
@@ -318,8 +335,11 @@ const [Alert, showAlert]=useState(false);
                 value={UserPas}
                 onChangeText={(value) => {
                   setPas(value);
-                setPassErro("")
-                }} onBlur={()=>{  validPass(UserPas);}}
+                  setPassErro("");
+                }}
+                onBlur={() => {
+                  validPass(UserPas);
+                }}
                 placeholder="Enter your password"
                 placeholderTextColor={theme.placeholder}
                 secureTextEntry={!showPassword}
@@ -367,16 +387,19 @@ const [Alert, showAlert]=useState(false);
             )}
           </View>
 
-          <Text style={styles.signin}>
-            Already have an account?{" "}
+          <View style={styles.signin}>
+            <Text style={styles.signinText}>
+              Already have an account?
+            </Text>
 
-            <Link
-              href="/SignIn"
-              style={styles.signinLink}
+            <Pressable
+              onPress={() => router.replace("/SignIn")}
             >
-              Sign In
-            </Link>
-          </Text>
+              <Text style={styles.signinLink}>
+                Sign In
+              </Text>
+            </Pressable>
+          </View>
 
           <ConfirmAlert
             visible={alertEmail}
@@ -386,15 +409,17 @@ const [Alert, showAlert]=useState(false);
               setAlertEmail(false);
             }}
           />
+
+          <ConfirmAlert
+            visible={Alert}
+            title="Error"
+            Message="All Fields are required"
+            onConfirm={() => {
+              showAlert(false);
+            }}
+          />
+
         </View>
-        <ConfirmAlert
-  visible={Alert}
-  title="Error"
-  Message="All Fields are required"
-  onConfirm={() => {
-    showAlert(false);
-  }}
-/>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -509,8 +534,13 @@ const createStyles = (theme: any) =>
     },
 
     signin: {
-      textAlign: "center",
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
       marginTop: 22,
+    },
+
+    signinText: {
       color: theme.secondaryText,
       fontSize: 14,
     },
@@ -518,5 +548,7 @@ const createStyles = (theme: any) =>
     signinLink: {
       color: theme.primary,
       fontWeight: "800",
+      fontSize: 14,
+      marginLeft: 4,
     },
   });

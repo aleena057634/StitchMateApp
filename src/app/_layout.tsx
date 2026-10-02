@@ -52,7 +52,24 @@ function StackLayout() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="SignIn"
+        options={{
+          headerShown: false,
+        }}
+      />
+
+        <Stack.Screen
+        name="SignUp"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
+    
+
+    
   );
 }
 

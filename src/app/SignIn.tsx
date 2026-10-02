@@ -254,7 +254,7 @@ export default function SignIn() {
             <Text
               style={styles.signupLink}
               onPress={() =>
-                router.push("/SignUp")
+                router.replace("/SignUp")
               }
             >
               Sign Up
