@@ -1031,86 +1031,160 @@ for (const audio of audios) {
       </View>
 
       {/* ADD DESIGN */}
-      <View style={styles.imageSection}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: theme.text },
-          ]}
-        >
-          Add Design
-        </Text>
+      ```tsx
+{/* ADD DESIGN */}
+<View
+  style={[
+    styles.card,
+    {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+    },
+  ]}
+>
+  <View style={styles.designHeader}>
+    <View>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: theme.text },
+        ]}
+      >
+        Add Design
+      </Text>
 
-        <Pressable
-          style={[
-            styles.addImageButton,
-            {
-              backgroundColor: theme.inputBackground,
-              borderColor: theme.border,
-            },
-          ]}
-          onPress={() => {
-            if (orderImages.length >= 2) {
-              setImageLimitAlert(true);
-              return;
-            }
+      <Text
+        style={[
+          styles.designSubtitle,
+          { color: theme.secondaryText },
+        ]}
+      >
+        Add up to 2 design images
+      </Text>
+    </View>
 
-            setImageAlert(true);
-          }}
+    <View
+      style={[
+        styles.imageCount,
+        { backgroundColor: theme.background },
+      ]}
+    >
+      <Text
+        style={[
+          styles.imageCountText,
+          { color: theme.primary },
+        ]}
+      >
+        {orderImages.length}/2
+      </Text>
+    </View>
+  </View>
+
+  <Pressable
+    style={[
+      styles.addImageButton,
+      {
+        backgroundColor: theme.inputBackground,
+        borderColor: theme.primary,
+      },
+    ]}
+    onPress={() => {
+      if (orderImages.length >= 2) {
+        setImageLimitAlert(true);
+        return;
+      }
+
+      setImageAlert(true);
+    }}
+  >
+    <View
+      style={[
+        styles.imageIconCircle,
+        { backgroundColor: theme.primary },
+      ]}
+    >
+      <Ionicons
+        name="image-outline"
+        size={27}
+        color={theme.white}
+      />
+    </View>
+
+    <View style={styles.addImageContent}>
+      <Text
+        style={[
+          styles.addImageText,
+          { color: theme.text },
+        ]}
+      >
+        Add Design Image
+      </Text>
+
+      <Text
+        style={[
+          styles.addImageHint,
+          { color: theme.secondaryText },
+        ]}
+      >
+        Choose from gallery or take a photo
+      </Text>
+    </View>
+
+    <Ionicons
+      name="chevron-forward"
+      size={21}
+      color={theme.primary}
+    />
+  </Pressable>
+
+  {orderImages.length > 0 && (
+    <View style={styles.imagesRow}>
+      {orderImages.map((image, index) => (
+        <View
+          key={index}
+          style={styles.imagePreviewBox}
         >
-          <Ionicons
-            name="image-outline"
-            size={28}
-            color={theme.primary}
+          <Image
+            source={{ uri: image }}
+            style={styles.orderImage}
           />
 
-          <Text
+          <View
             style={[
-              styles.addImageText,
-              { color: theme.text },
+              styles.imageNumber,
+              { backgroundColor: theme.primary },
             ]}
           >
-            Add Design Image
-          </Text>
-
-        
-        </Pressable>
-
-        {orderImages.length > 0 && (
-          <View style={styles.imagesRow}>
-            {orderImages.map((image, index) => (
-              <View
-                key={index}
-                style={styles.imagePreviewBox}
-              >
-                <Image
-                  source={{ uri: image }}
-                  style={styles.orderImage}
-                />
-
-                <Pressable
-                  style={[
-                    styles.deleteImageButton,
-                    {
-                      backgroundColor: theme.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setDeleteImageIndex(index);
-                    setdeleteImage(true);
-                  }}
-                >
-                  <Ionicons
-                    name="close"
-                    size={22}
-                    color={theme.white}
-                  />
-                </Pressable>
-              </View>
-            ))}
+            <Text style={styles.imageNumberText}>
+              {index + 1}
+            </Text>
           </View>
-        )}
-      </View>
+
+          <Pressable
+            style={[
+              styles.deleteImageButton,
+              {
+                backgroundColor: theme.primary,
+              },
+            ]}
+            onPress={() => {
+              setDeleteImageIndex(index);
+              setdeleteImage(true);
+            }}
+          >
+            <Ionicons
+              name="close"
+              size={20}
+              color={theme.white}
+            />
+          </Pressable>
+        </View>
+      ))}
+    </View>
+  )}
+</View>
+
+
 <AudioComponent
   audios={audios}
   onAudioRecorded={(uri) => {
@@ -1289,63 +1363,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  imageSection: {
-    marginBottom: 14,
-  },
-
-  addImageButton: {
-    minHeight: 60,
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    gap: 12,
-  },
-
-  addImageText: {
-    flex: 1,
-    fontSize: 14.5,
-    fontWeight: "600",
-  },
-
-  imagesRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 12,
-  },
-
-  imagePreviewBox: {
-    flex: 1,
-    height: 180,
-    borderRadius: 12,
-    overflow: "hidden",
-    position: "relative",
-  },
-
-  orderImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
-    borderRadius: 12,
-  },
-
-  deleteImageButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   content: {
     paddingHorizontal: 18,
     paddingTop: 10,
     paddingBottom: 35,
   },
+
+  // =========================
+  // HEADER
+  // =========================
 
   header: {
     marginBottom: 18,
@@ -1363,14 +1389,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
 
+  // =========================
+  // CARDS
+  // =========================
+
   card: {
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
+
     elevation: 2,
+
     shadowOpacity: 0.07,
     shadowRadius: 5,
+
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1391,12 +1424,18 @@ const styles = StyleSheet.create({
     marginTop: 9,
   },
 
+  // =========================
+  // INPUT
+  // =========================
+
   inputContainer: {
     height: 50,
     borderWidth: 1,
     borderRadius: 12,
+
     flexDirection: "row",
     alignItems: "center",
+
     paddingHorizontal: 13,
   },
 
@@ -1406,12 +1445,18 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
   },
 
+  // =========================
+  // DROPDOWN
+  // =========================
+
   dropdown: {
     height: 50,
     borderWidth: 1,
     borderRadius: 12,
+
     flexDirection: "row",
     alignItems: "center",
+
     paddingHorizontal: 13,
   },
 
@@ -1448,10 +1493,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  // =========================
+  // PAYMENT
+  // =========================
+
   remainingBox: {
     marginTop: 17,
     padding: 14,
     borderRadius: 12,
+
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -1469,24 +1519,176 @@ const styles = StyleSheet.create({
 
   notesInput: {
     minHeight: 100,
+
     borderWidth: 1,
     borderRadius: 12,
+
     padding: 13,
+
     fontSize: 14.5,
     textAlignVertical: "top",
   },
 
+  // =========================
+  // ADD DESIGN
+  // =========================
+
+  imageSection: {
+    marginBottom: 14,
+  },
+
+  designHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+
+    marginBottom: 15,
+  },
+
+  designSubtitle: {
+    fontSize: 12.5,
+    marginTop: -8,
+  },
+
+  imageCount: {
+    minWidth: 42,
+    height: 30,
+
+    paddingHorizontal: 9,
+
+    borderRadius: 15,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  imageCountText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  addImageButton: {
+    minHeight: 82,
+
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderRadius: 14,
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingHorizontal: 13,
+  },
+
+  imageIconCircle: {
+    width: 52,
+    height: 52,
+
+    borderRadius: 26,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  addImageContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+
+  addImageText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  addImageHint: {
+    fontSize: 11.5,
+    marginTop: 4,
+  },
+
+  imagesRow: {
+    flexDirection: "row",
+    gap: 10,
+
+    marginTop: 12,
+  },
+
+  imagePreviewBox: {
+    flex: 1,
+    height: 180,
+
+    borderRadius: 12,
+
+    overflow: "hidden",
+    position: "relative",
+  },
+
+  orderImage: {
+    width: "100%",
+    height: "100%",
+
+    resizeMode: "cover",
+
+    borderRadius: 12,
+  },
+
+  imageNumber: {
+    position: "absolute",
+
+    left: 8,
+    top: 8,
+
+    minWidth: 26,
+    height: 26,
+
+    borderRadius: 13,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  imageNumberText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  deleteImageButton: {
+    position: "absolute",
+
+    top: 8,
+    right: 8,
+
+    width: 32,
+    height: 32,
+
+    borderRadius: 16,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // =========================
+  // CREATE ORDER BUTTON
+  // =========================
+
   button: {
     height: 52,
+
     borderRadius: 14,
+
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+
     gap: 8,
+
     marginTop: 2,
+
     elevation: 3,
+
     shadowOpacity: 0.12,
     shadowRadius: 6,
+
     shadowOffset: {
       width: 0,
       height: 3,
@@ -1498,3 +1700,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+

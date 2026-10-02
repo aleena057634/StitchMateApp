@@ -12,14 +12,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ThemeContext from "../../context/ThemeContext"
+import ThemeContext from "../context/ThemeContext"
 import { useContext } from "react";
 import colors from "@/constents/colors";
 import CustomAlert from "@/componenets/CustomAlert";
 import {
   DeleteCustomer,
   getCustomers,
-} from "../../../databse/CustomerCru";
+} from "../../databse/CustomerCru";
 
 type customer = {
   ID: number;

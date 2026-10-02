@@ -6,27 +6,30 @@ import { payment_table } from "../../databse/payment";
 import { ProfileImage } from "../../databse/ImageCrud";
 import { Order_Image } from "../../databse/ImageCrud";
 import * as NavigationBar from "expo-navigation-bar";
-import {Audio_Tables} from "../../databse/Audio"
+import { Audio_Tables } from "../../databse/Audio";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Customer_Table,Measurement_table,userTable} from "../../databse/table";
+import {
+  Customer_Table,
+  Measurement_table,
+  userTable,
+} from "../../databse/table";
 import { order_Table } from "../../databse/order";
-// import { Custom_measurements,addCustomMeasurement}  from "../../databse/MeasuremenrCruc"
 import { scheduleDailyMotivation } from "@/utils/notification";
+
 function StackLayout() {
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
-   userTable() 
+    userTable();
     Measurement_table();
     payment_table();
     ProfileImage();
-    Order_Image(); Audio_Tables();
-    scheduleDailyMotivation (); 
-    // Custom_measurements();
-    // addCustomMeasurement();
-   
+    Order_Image();
+    Audio_Tables();
+    scheduleDailyMotivation();
+
     Customer_Table();
-order_Table();
+    order_Table();
   }, []);
 
   return (
@@ -45,13 +48,6 @@ order_Table();
     >
       <Stack.Screen
         name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="(tabs)"
         options={{
           headerShown: false,
         }}

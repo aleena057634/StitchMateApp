@@ -16,17 +16,17 @@ import {
   getCustomerName,
   getTotalCustomers,
   Measurement_table,
-} from "../../../databse/table";
-import { TotalOrders, getUrgentOrders } from "../../../databse/order";
-import ThemeContext from "../../context/ThemeContext";
+} from "../../databse/table";
+import { TotalOrders, getUrgentOrders } from "../../databse/order";
+import ThemeContext from "../context/ThemeContext";
 
 import {
   ProfileImage,
   saveProfileImage,
   getProfileImage,
-} from "../../../databse/ImageCrud";
+} from "../../databse/ImageCrud";
 
-import { ProfileImageModal } from "../../componenets/CustomAlert";
+import { ProfileImageModal } from "../componenets/CustomAlert";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Dashboard() {
@@ -217,7 +217,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.navigate("/Setting")}
+            onPress={() => router.push("/Setting")}
           >
             <Ionicons
               name="settings-outline"
@@ -398,7 +398,7 @@ export default function Dashboard() {
                 backgroundColor: theme.background,
               },
             ]}
-            onPress={() => router.replace("/OrderList")}
+            onPress={() => router.push("/OrderList")}
           >
             <Text
               style={[
@@ -452,7 +452,7 @@ export default function Dashboard() {
                 borderColor: theme.border,
               },
             ]}
-            onPress={() => router.navigate("/AddCustomers")}
+            onPress={() => router.push("/AddCustomers")}
           >
             <View
               style={[

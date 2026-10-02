@@ -155,22 +155,25 @@ export default function Profile() {
 
             <View style={styles.ButtonContainer}>
 
-                <Pressable
-                    style={[
-                        styles.buttondesign,
-                        { backgroundColor: theme.primary }
-                    ]}
-                >
-                    <Ionicons
-                        name="create-outline"
-                        size={20}
-                        color={theme.buttonText}
-                    />
+               {/* <Pressable
+    onPress={() => {
+        router.push("/editInfo");
+    }}
+    style={[
+        styles.buttondesign,
+        { backgroundColor: theme.primary }
+    ]}
+>
+    <Ionicons
+        name="create-outline"
+        size={20}
+        color={theme.buttonText}
+    />
 
-                    <Text style={[styles.buttonText, { color: theme.buttonText }]}>
-                        Edit Info
-                    </Text>
-                </Pressable>
+    <Text style={[styles.buttonText, { color: theme.buttonText }]}>
+        Edit Info
+    </Text>
+</Pressable> */}
 
                 <Pressable
                     onPress={() => { setPassAlert(true) }}

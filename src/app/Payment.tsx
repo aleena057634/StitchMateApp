@@ -13,7 +13,7 @@ import { useContext, useState } from "react";
 import {
   Payment_Show,
   ClearPaymentHistory,
-} from "../../../databse/payment";
+} from "../../databse/payment";
 
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
