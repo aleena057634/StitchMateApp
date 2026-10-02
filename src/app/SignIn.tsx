@@ -14,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
 import { SignInValidation } from "../../databse/queries";
@@ -42,7 +41,7 @@ export default function SignIn() {
       return false;
     }
 
-  const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
 
     if (!emailPattern.test(Email)) {
       setEmailError("Invalid email");
@@ -132,34 +131,30 @@ export default function SignIn() {
       >
         <View style={styles.container}>
 
-          {/* Header */}
-          <View style={styles.header}>
-            <View
-              style={[
-                styles.logoCircle,
-                {
-                  backgroundColor: theme.inputBackground,
-                },
-              ]}
-            >
-              <Ionicons
-                name="person-outline"
-                size={29}
-                color={theme.primary}
-              />
-            </View>
-
-            <Text style={styles.title}>
-              Welcome Back
-            </Text>
-
-            <Text style={styles.subtitle}>
-              Sign in to continue to StitchMate
-            </Text>
+          {/* Top Icon */}
+          <View style={styles.topIcon}>
+            <Ionicons
+              name="cut-outline"
+              size={32}
+              color={theme.primary}
+            />
           </View>
 
-          {/* Form */}
-          <View style={styles.form}>
+          <Text style={styles.brandName}>
+            StitchMate
+          </Text>
+
+          <Text style={styles.title}>
+            Welcome Back
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Sign in to continue managing your
+            tailor business
+          </Text>
+
+          {/* Login Card */}
+          <View style={styles.loginCard}>
 
             {/* Email */}
             <Text style={styles.label}>
@@ -180,10 +175,13 @@ export default function SignIn() {
                 value={email}
                 onChangeText={(value) => {
                   setEmail(value);
-                 setEmailError("")
+                  setEmailError("");
                 }}
-                onBlur={()=>{ validateEmail(email);}}
+                onBlur={() => {
+                  validateEmail(email);
+                }}
                 keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
 
@@ -213,18 +211,22 @@ export default function SignIn() {
                 onChangeText={(value) => {
                   setPass(value);
                   SetPassError("");
-                }} onBlur={()=>{validatePassword(pass)}}
+                }}
+                onBlur={() => {
+                  validatePassword(pass);
+                }}
                 secureTextEntry={!showPass}
               />
 
               <Pressable
                 onPress={() => setShowPass(!showPass)}
+                style={styles.eyeButton}
               >
                 <Ionicons
                   name={
                     showPass
-                      ? "eye"
-                      : "eye-off"
+                      ? "eye-outline"
+                      : "eye-off-outline"
                   }
                   size={20}
                   color={theme.primary}
@@ -238,12 +240,21 @@ export default function SignIn() {
               </Text>
             ) : null}
 
-            {/* Button */}
+            {/* Forgot Password UI */}
+            <Pressable
+              style={styles.forgotButton}
+            >
+              <Text style={styles.forgotText}>
+                Forgot Password?
+              </Text>
+            </Pressable>
+
+            {/* Sign In Button */}
             {loading ? (
               <View style={styles.loader}>
                 <ActivityIndicator
                   size="small"
-                  color={theme.primary}
+                  color={theme.buttonText}
                 />
               </View>
             ) : (
@@ -256,24 +267,34 @@ export default function SignIn() {
                 <Text style={styles.buttonText}>
                   Sign In
                 </Text>
+
+                <Ionicons
+                  name="arrow-forward"
+                  size={19}
+                  color={theme.buttonText}
+                />
               </Pressable>
             )}
           </View>
 
           {/* Sign Up */}
-          <Text style={styles.signup}>
-            Don't have an account?{" "}
-            <Text
-              style={styles.signupLink}
+          <View style={styles.signupContainer}>
+            <Text style={styles.signup}>
+              Don't have an account?
+            </Text>
+
+            <Pressable
               onPress={() =>
                 router.push("/SignUp")
               }
             >
-              Sign Up
-            </Text>
-          </Text>
+              <Text style={styles.signupLink}>
+                Create Account
+              </Text>
+            </Pressable>
+          </View>
 
-          {/* All Fields Alert */}
+          {/* Alerts */}
           <ConfirmAlert
             visible={Aalert}
             title="Error"
@@ -283,7 +304,6 @@ export default function SignIn() {
             }}
           />
 
-          {/* Invalid Credentials Alert */}
           <ConfirmAlert
             visible={alertPass}
             title="Error"
@@ -293,7 +313,6 @@ export default function SignIn() {
             }}
           />
 
-          {/* Unexpected Error Alert */}
           <ConfirmAlert
             visible={errorAlert}
             title="Error"
@@ -318,34 +337,42 @@ const createStyles = (theme: any) =>
 
     scrollContent: {
       flexGrow: 1,
+      justifyContent: "center",
     },
 
     container: {
-      flexGrow: 1,
+      flex: 1,
       paddingHorizontal: 25,
-      paddingTop: 45,
-      paddingBottom: 35,
+      paddingVertical: 35,
       justifyContent: "center",
     },
 
-    header: {
-      alignItems: "center",
-      marginBottom: 32,
-    },
-
-    logoCircle: {
-      width: 62,
-      height: 62,
-      borderRadius: 31,
+    topIcon: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      alignSelf: "center",
       justifyContent: "center",
       alignItems: "center",
-      marginBottom: 14,
+      marginBottom: 12,
+    },
+
+    brandName: {
+      color: theme.primary,
+      fontSize: 15,
+      fontWeight: "800",
+      textAlign: "center",
+      letterSpacing: 1,
+      marginBottom: 8,
     },
 
     title: {
-      fontSize: 29,
+      fontSize: 30,
       fontWeight: "800",
-      color: theme.primary,
+      color: theme.text,
       textAlign: "center",
     },
 
@@ -353,12 +380,20 @@ const createStyles = (theme: any) =>
       fontSize: 13,
       color: theme.secondaryText,
       textAlign: "center",
-      marginTop: 7,
+      marginTop: 8,
       lineHeight: 19,
+      paddingHorizontal: 25,
+      marginBottom: 28,
     },
 
-    form: {
+    loginCard: {
       width: "100%",
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 22,
+      padding: 20,
+      elevation: 4,
     },
 
     label: {
@@ -371,60 +406,85 @@ const createStyles = (theme: any) =>
     inputContainer: {
       flexDirection: "row",
       alignItems: "center",
-      height: 52,
-      backgroundColor: theme.card,
+      height: 53,
+      backgroundColor: theme.background,
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 16,
-      paddingHorizontal: 15,
+      borderRadius: 14,
+      paddingHorizontal: 14,
       marginBottom: 5,
     },
 
     inputText: {
       flex: 1,
-      marginLeft: 13,
+      marginLeft: 12,
       fontSize: 15,
       color: theme.text,
+    },
+
+    eyeButton: {
+      paddingLeft: 10,
     },
 
     errorText: {
       color: "#D32F2F",
       fontSize: 12,
       marginLeft: 4,
-      marginBottom: 14,
+      marginBottom: 12,
+    },
+
+    forgotButton: {
+      alignSelf: "flex-end",
+      marginTop: 2,
+      marginBottom: 18,
+    },
+
+    forgotText: {
+      color: theme.primary,
+      fontSize: 13,
+      fontWeight: "700",
     },
 
     button: {
       height: 53,
       backgroundColor: theme.primary,
-      borderRadius: 16,
+      borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-      marginTop: 4,
-      elevation: 3,
+      flexDirection: "row",
+      gap: 8,
     },
 
     buttonText: {
-      color: "#FFFFFF",
+      color: theme.buttonText,
       fontSize: 16,
       fontWeight: "700",
     },
 
     loader: {
       height: 53,
+      backgroundColor: theme.primary,
+      borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
     },
 
+    signupContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 24,
+      gap: 5,
+    },
+
     signup: {
-      textAlign: "center",
-      marginTop: 22,
       color: theme.secondaryText,
       fontSize: 14,
     },
 
     signupLink: {
       color: theme.primary,
+      fontSize: 14,
       fontWeight: "800",
     },
   });
