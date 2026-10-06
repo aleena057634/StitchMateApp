@@ -1,19 +1,29 @@
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { router } from "expo-router";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { useContext, useEffect } from "react";
 
-import { useContext } from "react";
 import ThemeContext from "../context/ThemeContext";
 
 export default function Index() {
-  const { theme, isDark, toggleTheme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      const userId = await AsyncStorage.getItem("userId");
+
+      if (userId) {
+        router.replace("/Dashbord");
+      } else {
+        router.replace("/SignIn");
+      }
+    };
+
+    checkUser();
+  }, []);
 
   const styles = StyleSheet.create({
     container: {
@@ -29,7 +39,7 @@ export default function Index() {
       height: 310,
       justifyContent: "center",
       alignItems: "center",
-      marginBottom: 10,
+      marginBottom: 15,
     },
 
     image: {
@@ -39,22 +49,22 @@ export default function Index() {
     },
 
     appName: {
-      fontSize: 18,
-      fontWeight: "700",
+      fontSize: 28,
+      fontWeight: "800",
       color: theme.accent,
-      letterSpacing: 0.5,
-      marginBottom: 4,
+      letterSpacing: 1,
+      marginBottom: 6,
     },
 
     tagline: {
-      fontSize: 13,
+      fontSize: 14,
       color: theme.secondaryText,
-      marginBottom: 12,
-      letterSpacing: 0.3,
+      letterSpacing: 0.5,
+      marginBottom: 18,
     },
 
     title: {
-      fontSize: 30,
+      fontSize: 27,
       fontWeight: "800",
       color: theme.primary,
       textAlign: "center",
@@ -62,53 +72,15 @@ export default function Index() {
     },
 
     subtitle: {
-      fontSize: 16,
+      fontSize: 15,
       color: theme.secondaryText,
       textAlign: "center",
-      lineHeight: 25,
-      marginBottom: 30,
-    },
-
-    button: {
-      width: "82%",
-      height: 54,
-      backgroundColor: theme.primary,
-      borderRadius: 16,
-      justifyContent: "center",
-      alignItems: "center",
-
-      elevation: 5,
-
-      shadowOffset: {
-        width: 0,
-        height: 3,
-      },
-
-      shadowOpacity: 0.2,
-      shadowRadius: 5,
-    },
-
-    buttonText: {
-      color: theme.white,
-      fontSize: 17,
-      fontWeight: "700",
-      letterSpacing: 0.3,
+      lineHeight: 24,
     },
   });
 
-  async function handleGetStarted() {
-    const userId = await AsyncStorage.getItem("userId");
-
-    if (userId) {
-      router.replace("/Dashbord");
-    } else {
-      router.replace("/SignIn");
-    }
-  }
-
   return (
     <View style={styles.container}>
-
       <View style={styles.imageContainer}>
         <Image
           source={require("../../assets/images/tabIcons/tailor1.png")}
@@ -132,16 +104,7 @@ export default function Index() {
         Perfect measurements.{"\n"}
         Perfect fitting.
       </Text>
-
-      <Pressable
-        style={styles.button}
-        onPress={handleGetStarted}
-      >
-        <Text style={styles.buttonText}>
-          Get Started
-        </Text>
-      </Pressable>
-
     </View>
   );
 }
+

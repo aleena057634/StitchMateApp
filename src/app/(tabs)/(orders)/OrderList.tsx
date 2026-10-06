@@ -14,9 +14,9 @@ import {
   View,
 } from "react-native";
 
-import * as OrderFunctions from "../../databse/order";
+import * as OrderFunctions from "../../../../databse/order";
 import theme from "@/constents/colors";
-import ThemeContext from "../context/ThemeContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { useContext } from "react";
 import CustomAlert from "@/componenets/CustomAlert";
 export default function OrderList() {

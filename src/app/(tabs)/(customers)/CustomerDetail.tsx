@@ -9,8 +9,8 @@ import {
   View,
 } from "react-native";
 
-import ThemeContext from "../context/ThemeContext";
-import { getCustomers } from "../../databse/CustomerCru";
+import ThemeContext from "../../../context/ThemeContext";
+import { getCustomers } from "../../../../databse/CustomerCru";
 
 export default function CustomerScreen() {
   const { id } = useLocalSearchParams();

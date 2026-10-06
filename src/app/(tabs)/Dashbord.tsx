@@ -16,17 +16,17 @@ import {
   getCustomerName,
   getTotalCustomers,
   Measurement_table,
-} from "../../databse/table";
-import { TotalOrders, getUrgentOrders } from "../../databse/order";
-import ThemeContext from "../context/ThemeContext";
+} from "../../../databse/table";
+import { TotalOrders, getUrgentOrders } from "../../../databse/order";
+import ThemeContext from "../../context/ThemeContext";
 
 import {
   ProfileImage,
   saveProfileImage,
   getProfileImage,
-} from "../../databse/ImageCrud";
+} from "../../../databse/ImageCrud";
 
-import { ProfileImageModal } from "../componenets/CustomAlert";
+import { ProfileImageModal } from "../../componenets/CustomAlert";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Dashboard() {

@@ -1,8 +1,8 @@
 import FloatingButton from "@/componenets/FloatingButton";
 import SearchBox from "@/componenets/SearchBox";
 import CustomAlert from "@/componenets/CustomAlert";
-import ThemeContext from "../context/ThemeContext";
-import { DeleteCustomer, getCustomers } from "../../databse/CustomerCru";
+import ThemeContext from "../../../context/ThemeContext";
+import { DeleteCustomer, getCustomers } from "../../../../databse/CustomerCru";
 
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";

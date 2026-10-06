@@ -18,26 +18,26 @@ import {
   getOrderImage,
   deleteOrderImage,
   Update_OrderImage,
-} from "../../databse/ImageCrud";
-import { get_Audios } from "../../databse/Audio";
+} from "../../../../databse/ImageCrud";
+import { get_Audios } from "../../../../databse/Audio";
 import AudioComponent, {
 
-} from "../componenets/AudioComponent";
-import {showSimplePaymentNotification} from "../utils/notification"
-import { AudioPlayerItem } from "../componenets/AudioComponent";
+} from "../../../componenets/AudioComponent";
+import {showSimplePaymentNotification} from "../../../utils/notification"
+import { AudioPlayerItem } from "../../../componenets/AudioComponent";
 import {
   Mark,
   Order_detail,
   Partial_Payment,
   updateOrderStatus,
-} from "../../databse/order";
+} from "../../../../databse/order";
 
 import CustomAlert, {
   ConfirmAlert,
   ProfileImageModal,
-} from "../componenets/CustomAlert";
+} from "../../../componenets/CustomAlert";
 
-import ThemeContext from "../context/ThemeContext";
+import ThemeContext from "../../../context/ThemeContext";
 
 import * as ImagePicker from "expo-image-picker";
 

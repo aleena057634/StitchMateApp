@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { ChangePassword } from "../../databse/table";
+import { ChangePassword } from "../../../../databse/table";
 import CustomAlert, { ConfirmAlert } from "@/componenets/CustomAlert";
 
 export default function ChangePass() {

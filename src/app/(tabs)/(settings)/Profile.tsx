@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native'
 import React, { useCallback, useContext, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
-import { getCurrentUserDetail } from "../../databse/table"
-import { getProfileImage } from "../../databse/ImageCrud"
+import { getCurrentUserDetail } from "../../../../databse/table"
+import { getProfileImage } from "../../../../databse/ImageCrud"
 import ThemeContext from '@/context/ThemeContext';
 import CustomAlert from '@/componenets/CustomAlert';
 import { router, useFocusEffect } from 'expo-router';

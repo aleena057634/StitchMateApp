@@ -19,7 +19,7 @@ import {
 import {
   AddCustomer,
   updateCunstomer,
-} from "../../databse/CustomerCru";
+} from "../../../../databse/CustomerCru";
 
 export default function AddCustomers() {
   const { theme } = useContext(ThemeContext);
