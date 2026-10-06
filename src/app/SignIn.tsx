@@ -18,8 +18,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { ConfirmAlert } from "@/componenets/CustomAlert";
 import ThemeContext from "@/context/ThemeContext";
 import { SignInValidation } from "../../databse/queries";
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+} from "@expo-google-fonts/poppins";
 
 export default function SignIn() {
+  const [fontsLoaded] = useFonts({
+    PoppinsRegular: Poppins_400Regular,
+    PoppinsMedium: Poppins_500Medium,
+    PoppinsSemiBold: Poppins_600SemiBold,
+  });
+  
   const { theme } = useContext(ThemeContext);
 
   const [email, setEmail] = useState("");
@@ -142,7 +154,7 @@ export default function SignIn() {
             </Text>
 
             <Text style={styles.subtitle}>
-              Sign in to continue to StitchMate
+              Sign in to continue your Business
             </Text>
           </View>
 
@@ -320,20 +332,13 @@ const createStyles = (theme: any) =>
     marginBottom: 35,
      paddingHorizontal: 10, },
 
-    logoCircle: {
-      width: 62,
-      height: 62,
-      borderRadius: 31,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 14,
-    },
+ 
 
-   title: { fontSize: 32, fontWeight: "900", 
-    color: theme.primary, 
+   title: { fontSize: 40, fontWeight: "900", 
+    color: theme.primary, fontFamily:"Poppins_600SemiBold",
     textAlign: "center", letterSpacing: 0.3, },
 
-   subtitle: { fontSize: 14, color: theme.secondaryText,
+   subtitle: { fontSize: 15, color: theme.primary,
      textAlign: "center", marginTop: 9, lineHeight: 20, },
 
     form: {
@@ -341,9 +346,9 @@ const createStyles = (theme: any) =>
     },
 
     label: {
-      fontSize: 14,
-      fontWeight: "700",
-      color: theme.text,
+      fontSize: 18,
+      fontWeight: "bold",
+      color: theme.primary,
       marginBottom: 7,
     },
 

@@ -18,7 +18,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.aleena_56.TailorAppNew"
+      "package": "com.aleena_56.TailorAppNew",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "output": "static",
@@ -31,7 +37,8 @@
       "expo-image",
       "expo-web-browser",
       "expo-notifications",
-      "expo-audio"
+      "expo-audio",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -40,8 +47,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c7705eeb-6865-4457-988e-47e75140b54f"
+        "projectId": "f103f51d-42b7-432e-aea6-370044170f9d"
       }
-    }
+    },
+    "owner": "aleena_56"
   }
 }

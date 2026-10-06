@@ -1031,7 +1031,7 @@ for (const audio of audios) {
       </View>
 
       {/* ADD DESIGN */}
-      ```tsx
+  
 {/* ADD DESIGN */}
 <View
   style={[

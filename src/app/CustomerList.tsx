@@ -1,25 +1,22 @@
 import FloatingButton from "@/componenets/FloatingButton";
 import SearchBox from "@/componenets/SearchBox";
+import CustomAlert from "@/componenets/CustomAlert";
+import ThemeContext from "../context/ThemeContext";
+import { DeleteCustomer, getCustomers } from "../../databse/CustomerCru";
+
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
+
 import {
-  Alert,
   FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
-import ThemeContext from "../context/ThemeContext"
-import { useContext } from "react";
-import colors from "@/constents/colors";
-import CustomAlert from "@/componenets/CustomAlert";
-import {
-  DeleteCustomer,
-  getCustomers,
-} from "../../databse/CustomerCru";
 
 type customer = {
   ID: number;
@@ -29,19 +26,19 @@ type customer = {
 };
 
 export default function CustomerList() {
-  const { theme, isDark, toggleTheme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
+
   const [search, setSearch] = useState("");
   const [CustomersData, setCustomerData] = useState<customer[]>([]);
   const [showAlert, setShowAlert] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-
-  const [editId,setEditId]=useState<number|null>(null);
-  const [showEditAlert,setEditAlert]=useState(false)
+  const [editId, setEditId] = useState<number | null>(null);
+  const [showEditAlert, setEditAlert] = useState(false);
 
   const filteredCustomers = CustomersData.filter((item) =>
     item.NAME.toLowerCase().includes(search.toLowerCase())
   );
-  // Database se customers load karta hai
+
   async function LoadCustomer() {
     try {
       const data = await getCustomers();
@@ -51,23 +48,19 @@ export default function CustomerList() {
     }
   }
 
-  // Jab bhi CustomerList screen par wapas aayegi,
-  // customers dobara database se load honge
   useFocusEffect(
     useCallback(() => {
       LoadCustomer();
-      setSearch("")
+      setSearch("");
     }, [])
   );
 
-  // Customer delete karne ka function
   async function HandleDeletedCustomer(id: number) {
     try {
       await DeleteCustomer(id);
-
       LoadCustomer();
     } catch (error) {
-      console.log("Error in deleteing customers...");
+      console.log("Error in deleting customers...");
     }
   }
 
@@ -78,36 +71,51 @@ export default function CustomerList() {
         { backgroundColor: theme.background },
       ]}
     >
+      {/* Customers Heading */}
+<Text
+  style={[
+    styles.heading,
+    { color: theme.text },
+  ]}
+>
+  Customers
+</Text>
+
+{/* Search */}
+<View style={styles.searchContainer}>
+  <SearchBox
+    value={search}
+    onChangeText={setSearch}
+  />
+</View>
       {/* Search */}
-      <View style={styles.searchContainer}>
-        <SearchBox
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
+     
+      
 
       {/* Customer List */}
       <FlatList
         data={filteredCustomers}
         keyExtractor={(item) => item.ID.toString()}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={
-          CustomersData.length === 0
+          filteredCustomers.length === 0
             ? styles.emptyContainer
             : styles.listContainer
         }
-        showsVerticalScrollIndicator={false}
-        // Jab customer list empty hogi to ye UI show hoga
         ListEmptyComponent={
           <View style={styles.emptyContent}>
             <View
               style={[
                 styles.emptyIcon,
-                { backgroundColor: theme.inputBackground },
+                {
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                },
               ]}
             >
               <Ionicons
                 name="people-outline"
-                size={52}
+                size={48}
                 color={theme.primary}
               />
             </View>
@@ -149,7 +157,7 @@ export default function CustomerList() {
               });
             }}
           >
-            {/* Customer Initial */}
+            {/* Customer Avatar */}
             <View
               style={[
                 styles.iconContainer,
@@ -166,9 +174,10 @@ export default function CustomerList() {
               </Text>
             </View>
 
-            {/* Customer Information */}
+            {/* Customer Info */}
             <View style={styles.customerInfo}>
               <Text
+                numberOfLines={1}
                 style={[
                   styles.name,
                   { color: theme.text },
@@ -177,66 +186,87 @@ export default function CustomerList() {
                 {item.NAME}
               </Text>
 
-              <Text
-                style={[
-                  styles.phone,
-                  { color: theme.secondaryText },
-                ]}
-              >
-                {item.PHONE}
-              </Text>
+              <View style={styles.infoRow}>
+                <Ionicons
+                  name="call-outline"
+                  size={14}
+                  color={theme.primary}
+                />
 
-              <Text
-                style={[
-                  styles.address,
-                  { color: theme.secondaryText },
-                ]}
-              >
-                {item.ADDRESS}
-              </Text>
+                <Text
+                  style={[
+                    styles.infoText,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  {item.PHONE}
+                </Text>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={theme.primary}
+                />
+
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.infoText,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  {item.ADDRESS}
+                </Text>
+              </View>
             </View>
+
+            {/* Actions */}
             <View style={styles.actions}>
-              {/* DELETE */}
               <Pressable
                 style={[
                   styles.actionButton,
-                  { backgroundColor: theme.background },
+                  {
+                    backgroundColor: theme.background,
+                  },
                 ]}
                 onPress={() => {
-                  setDeleteId(item.ID)
+                  setDeleteId(item.ID);
                   setShowAlert(true);
-
                 }}
-      >
+              >
                 <Ionicons
                   name="trash-outline"
                   color={theme.primary}
-                  size={19}
+                  size={18}
                 />
               </Pressable>
 
-              {/* EDIT */}
               <Pressable
                 style={[
                   styles.actionButton,
-                  { backgroundColor: theme.background },
+                  {
+                    backgroundColor: theme.background,
+                  },
                 ]}
                 onPress={() => {
-                setEditAlert(true);
-                setEditId(item.ID);
+                  setEditId(item.ID);
+                  setEditAlert(true);
                 }}
               >
                 <Ionicons
                   name="create-outline"
                   color={theme.primary}
-                  size={19}
+                  size={18}
                 />
               </Pressable>
             </View>
           </Pressable>
         )}
-
       />
+
+      {/* Delete Alert */}
       <CustomAlert
         visible={showAlert}
         title="Delete Customer"
@@ -251,37 +281,36 @@ export default function CustomerList() {
           setDeleteId(null);
         }}
       />
-      {/* ya jo hai edit ka lia hai */}
-<CustomAlert
-visible={showEditAlert}
-title="Edit CustomerInformation"
-Message="Are You sure you want to edit Information"
-onCancel={()=>{setEditAlert(false)}}
-onConfirm={() => {
-  const customer = CustomersData.find(
-    (item) => item.ID === editId
-  );
 
-  if (customer) {
-    router.push({
-      pathname: "/AddCustomers",
-      params: {
-        ID: customer.ID.toString(),
-        NAME: customer.NAME,
-        PHONE: customer.PHONE,
-        ADDRESS: customer.ADDRESS,
-      },
-    });
-  }
+      {/* Edit Alert */}
+      <CustomAlert
+        visible={showEditAlert}
+        title="Edit Customer Information"
+        Message="Are you sure you want to edit information?"
+        onCancel={() => setEditAlert(false)}
+        onConfirm={() => {
+          const customer = CustomersData.find(
+            (item) => item.ID === editId
+          );
 
-  setEditAlert(false);
-  setEditId(null);
-}}
-   
+          if (customer) {
+            router.push({
+              pathname: "/AddCustomers",
+              params: {
+                ID: customer.ID.toString(),
+                NAME: customer.NAME,
+                PHONE: customer.PHONE,
+                ADDRESS: customer.ADDRESS,
+              },
+            });
+          }
 
-/>
+          setEditAlert(false);
+          setEditId(null);
+        }}
+      />
 
-      {/* Add Customer Floating Button */}
+      {/* Add Customer */}
       <FloatingButton
         onPress={() => {
           router.push("/AddCustomers");
@@ -292,129 +321,123 @@ onConfirm={() => {
 }
 
 const styles = StyleSheet.create({
-  // Main screen
   container: {
     flex: 1,
   },
+  heading: {
+  fontSize: 24,
+  fontWeight: "bold",
+  marginHorizontal: 14,
+  marginBottom: 8,
+},
 
-  // Search box
-  searchContainer: {
-    marginHorizontal: 12,
-    marginTop: 8,
-    marginBottom: 8,
-  },
+searchContainer: {
+  marginHorizontal: 14,
+  marginBottom: 8,
+},
 
-  // Normal customer list
+ 
+
   listContainer: {
-    paddingHorizontal: 12,
-    paddingTop: 2,
+    paddingHorizontal: 14,
+    paddingTop: 4,
     paddingBottom: 100,
   },
 
-  // Empty list container
   emptyContainer: {
     flexGrow: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
   },
 
-  // Empty state content
   emptyContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 25,
+    paddingBottom: 70,
   },
 
-  // Empty state icon background
   emptyIcon: {
-    width: 90,
-    height: 90,
-    borderRadius: 28,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 4,
+    borderWidth: 1,
+    marginBottom: 16,
   },
 
-  // Empty state heading
   emptyTitle: {
     fontSize: 20,
     fontWeight: "700",
-    marginTop: 10,
+    marginBottom: 6,
   },
 
-  // Empty state description
   emptyText: {
     fontSize: 14,
-    marginTop: 6,
   },
 
-  // Customer card
   card: {
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 13,
+    minHeight: 82,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
 
-    elevation: 2,
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowRadius: 5,
+    elevation: 2,
   },
 
-  // Customer initial circle
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
 
-  // Customer initial text
   iconText: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 21,
+    fontWeight: "800",
   },
 
-  // Customer information
   customerInfo: {
     flex: 1,
     paddingRight: 8,
   },
 
-  // Customer name
   name: {
     fontSize: 16,
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: 6,
   },
 
-  // Customer phone
-  phone: {
-    fontSize: 13,
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 3,
   },
 
-  // Customer address
-  address: {
-    fontSize: 13,
+  infoText: {
+    fontSize: 12.5,
+    marginLeft: 5,
+    flex: 1,
   },
 
-  // Edit and delete buttons
   actions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
 
-  // Action button
   actionButton: {
     width: 34,
     height: 34,

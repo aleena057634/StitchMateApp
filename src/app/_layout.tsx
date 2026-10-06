@@ -3,16 +3,16 @@ import ThemeContextProvider from "../context/ThemeContexProvider";
 import ThemeContext from "../context/ThemeContext";
 import { useContext, useEffect } from "react";
 import { payment_table } from "../../databse/payment";
-import { ProfileImage } from "../../databse/ImageCrud";
-import { Order_Image } from "../../databse/ImageCrud";
-import * as NavigationBar from "expo-navigation-bar";
+import { ProfileImage, Order_Image } from "../../databse/ImageCrud";
 import { Audio_Tables } from "../../databse/Audio";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import {
   Customer_Table,
   Measurement_table,
   userTable,
 } from "../../databse/table";
+
 import { order_Table } from "../../databse/order";
 import { scheduleDailyMotivation } from "@/utils/notification";
 
@@ -27,7 +27,6 @@ function StackLayout() {
     Order_Image();
     Audio_Tables();
     scheduleDailyMotivation();
-
     Customer_Table();
     order_Table();
   }, []);
@@ -37,10 +36,16 @@ function StackLayout() {
       initialRouteName="index"
       screenOptions={{
         headerShown: true,
+
+    headerBackVisible: false,
+        title: "StitchMate",
+
         headerStyle: {
           backgroundColor: theme.primary,
         },
-        headerTintColor: "#FFFFFF",
+
+        headerTintColor: theme.white,
+
         headerTitleStyle: {
           fontWeight: "bold",
         },
@@ -60,16 +65,21 @@ function StackLayout() {
         }}
       />
 
-        <Stack.Screen
+      <Stack.Screen
         name="SignUp"
         options={{
           headerShown: false,
         }}
       />
-    </Stack>
-    
 
-    
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          headerShown: true,
+          title: "StitchMate",
+        }}
+      />
+    </Stack>
   );
 }
 

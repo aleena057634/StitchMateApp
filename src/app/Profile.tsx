@@ -1,11 +1,11 @@
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentUserDetail } from "../../databse/table"
 import { getProfileImage } from "../../databse/ImageCrud"
 import ThemeContext from '@/context/ThemeContext';
 import CustomAlert from '@/componenets/CustomAlert';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 export default function Profile() {
 
@@ -21,7 +21,7 @@ export default function Profile() {
         if (imageData != null) {
             setProfile(imageData);
         } else {
-            console.log("\nFailed to load image");
+            setProfile(null);
         }
     }
 
@@ -30,10 +30,12 @@ export default function Profile() {
         setUserInfo(data);
     }
 
-    useEffect(() => {
-        getuser();
-        getImage();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            getuser();
+            getImage();
+        }, [])
+    );
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -82,7 +84,6 @@ export default function Profile() {
                     Account Details
                 </Text>
 
-                {/* User ID */}
                 <View
                     style={[
                         styles.detailRow,
@@ -105,7 +106,6 @@ export default function Profile() {
                     </Text>
                 </View>
 
-                {/* Email */}
                 <View
                     style={[
                         styles.detailRow,
@@ -128,7 +128,6 @@ export default function Profile() {
                     </Text>
                 </View>
 
-                {/* Phone */}
                 <View
                     style={[
                         styles.detailRow,
@@ -155,26 +154,6 @@ export default function Profile() {
 
             <View style={styles.ButtonContainer}>
 
-               {/* <Pressable
-    onPress={() => {
-        router.push("/editInfo");
-    }}
-    style={[
-        styles.buttondesign,
-        { backgroundColor: theme.primary }
-    ]}
->
-    <Ionicons
-        name="create-outline"
-        size={20}
-        color={theme.buttonText}
-    />
-
-    <Text style={[styles.buttonText, { color: theme.buttonText }]}>
-        Edit Info
-    </Text>
-</Pressable> */}
-
                 <Pressable
                     onPress={() => { setPassAlert(true) }}
                     style={[
@@ -194,10 +173,11 @@ export default function Profile() {
                 </Pressable>
 
             </View>
+
             <CustomAlert
                 visible={passAlert}
-                title='Password Change'
-                Message='Are You sure you want to change Password?'
+                title="Password Change"
+                Message="Are You sure you want to change Password?"
                 onCancel={() => { setPassAlert(false) }}
                 onConfirm={() => {
                     router.push("/ChangePass")
@@ -233,7 +213,6 @@ const styles = StyleSheet.create({
     },
 
     container: {
-
         flex: 1,
         padding: 20,
     },

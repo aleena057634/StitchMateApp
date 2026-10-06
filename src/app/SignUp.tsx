@@ -14,7 +14,12 @@ import {
   TextInput,
   View,
 } from "react-native";
-
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+} from "@expo-google-fonts/poppins";
 import ThemeContext from "@/context/ThemeContext";
 
 import {
@@ -45,6 +50,11 @@ export default function SignUp() {
   const [EmailError, setEmailErro] = useState("");
   const [phoneError, setPhoneErro] = useState("");
   const [passError, setPassErro] = useState("");
+const [fontsLoaded] = useFonts({
+  PoppinsRegular: Poppins_400Regular,
+  PoppinsMedium: Poppins_500Medium,
+  PoppinsSemiBold: Poppins_600SemiBold,
+});
 
   useEffect(() => {
     userTable();
@@ -195,27 +205,14 @@ export default function SignUp() {
         <View style={styles.container}>
 
           <View style={styles.header}>
-            <View
-              style={[
-                styles.logoCircle,
-                {
-                  backgroundColor: theme.inputBackground,
-                },
-              ]}
-            >
-              <Ionicons
-                name="person-add-outline"
-                size={30}
-                color={theme.primary}
-              />
-            </View>
+            
 
             <Text style={styles.title}>
               Create Account
             </Text>
 
             <Text style={styles.subtitle}>
-              Sign up to start managing your tailor business
+             Create Account to start managing your tailor business
             </Text>
           </View>
 
@@ -449,25 +446,19 @@ const createStyles = (theme: any) =>
       marginBottom: 30,
     },
 
-    logoCircle: {
-      width: 62,
-      height: 62,
-      borderRadius: 31,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 14,
-    },
+  
 
     title: {
-      fontSize: 29,
-      fontWeight: "800",
+      fontSize: 40,
+      fontWeight: "900",
       color: theme.primary,
+      fontFamily:"Poppins_400Regular",
       textAlign: "center",
     },
 
     subtitle: {
       fontSize: 13,
-      color: theme.secondaryText,
+      color: theme.primary,
       textAlign: "center",
       marginTop: 7,
       lineHeight: 19,
@@ -479,9 +470,9 @@ const createStyles = (theme: any) =>
     },
 
     label: {
-      fontSize: 14,
+      fontSize: 18,
       fontWeight: "700",
-      color: theme.text,
+      color: theme.primary,
       marginBottom: 7,
     },
 
